@@ -2,7 +2,7 @@
 #include <regex>
 #include <functional>
 #include "LineContent.h"
-#include "Token/Token.h"
+#include "Token.h"
 
 namespace MuCplGen
 {

@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include "../ColoredText.h"
 
 namespace MuCplGen
 {
@@ -28,47 +27,38 @@ namespace MuCplGen
 		
 		void Type(const std::string& type)
 		{
-			this->type = type;
+			this->type_name = type;
 			hash = GetHash(type.c_str());
 		}
 
 		const std::string& Type() const
 		{
-			return type;
+			return type_name;
 		}
 
 		virtual bool SameTypeAs(const BaseToken& r) const
 		{
-			if (hash == r.hash) return type == r.type;
+			if (hash == r.hash) return type_name == r.type_name;
 			else return false;
 		}
 
 		bool IsEndToken() const { return end_of_tokens; }
+
+		friend std::ostream& operator << (std::ostream& os, const BaseToken& token)
+		{
+			os << "basic_token:" << std::endl;
+			os << "type_name:" << token.type_name << std::endl;
+			os << "name:" << token.name << std::endl;
+			os << "line:" << token.line << std::endl;
+			os << "start:" << token.start << std::endl;
+			os << "end:" << token.end << std::endl;
+			os << "is_end_token:" << token.end_of_tokens;
+			return os;
+		}
 	protected:
-		std::string type;	
+		std::string type_name;
 	private:
 		bool end_of_tokens = false;
 		size_t hash = 0;
-	};
-
-	struct EasyToken : public BaseToken
-	{
-		enum class TokenType
-		{
-			none,
-			rel_op,
-			arith_op,
-			log_op,
-			number,
-			identifier,
-			assign,
-			keyword,
-			separator,
-			raw_string,
-			custom_type
-		};
-		TokenType type = TokenType::none;
-
-		ConsoleForegroundColor color = ConsoleForegroundColor::enmCFC_White;
 	};
 }

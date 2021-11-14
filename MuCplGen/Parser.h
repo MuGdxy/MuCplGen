@@ -2,16 +2,15 @@
 #include <functional>
 #include <stack>
 #include <vector>
+#include <type_traits>
 #include <any>
 #include "PushDownAutomaton.h"
-#include <type_traits>
-#include "Token/Token.h"
-
-//#define STOP_PARSING (void*)1
-//#define SLR_Debug
+#include "Token.h"
+#include "DebugOption.h"
 
 namespace MuCplGen
 {
+	using namespace Debug;
 	enum class ParserErrorCode
 	{
 		Stop = 1,
@@ -21,6 +20,8 @@ namespace MuCplGen
 	template<class UserToken, typename T = size_t>
 	class SLRParser
 	{
+		template<class Parser>
+		friend class SyntaxDirected;
 	public:
 		using Token = UserToken;
 		using SymbolType = T;
@@ -47,8 +48,8 @@ namespace MuCplGen
 		GotoTable goto_table;
 		ActionTable action_table;
 		size_t token_pointer;
+		size_t debug_option;
 	public:
-		
 		std::string information;
 
 		SLRParser() : token_pointer(0) {}
@@ -89,7 +90,7 @@ namespace MuCplGen
 		using ErrorFunc = std::function<void(std::vector<T>, size_t)>;
 
 		bool Parse(const TokenSet& token_set, TransferFunc transferFunc,
-			SemanticAction semanticFunc, ErrorFunc errorFunc = nullptr);
+			SemanticAction semanticFunc, ErrorFunc errorFunc = nullptr, std::ostream& log = std::cout);
 	};
 
 	template<class UserToken, typename T>
@@ -119,7 +120,7 @@ namespace MuCplGen
 	template<class UserToken, typename T>
 	bool SLRParser<UserToken, T>::Parse(
 		const TokenSet& token_set, TransferFunc transfer_func,
-		SemanticAction semantic_action, ErrorFunc error_func)
+		SemanticAction semantic_action, ErrorFunc error_func, std::ostream& log)
 	{
 		auto len = token_set.size();
 		size_t top_token_iter = 0;
@@ -130,7 +131,8 @@ namespace MuCplGen
 		{
 			if (iter >= token_set.size())
 			{
-				std::cout << "tokens run out without a End_Separator" << std::endl;
+				if (debug_option & DebugOption::ParserDetail)
+					log << "tokens run out without an EndToken" << std::endl;
 				break;
 			}
 			T input_term = transfer_func(token_set[iter]);
@@ -146,19 +148,15 @@ namespace MuCplGen
 					semantic_stack.push(nullptr);
 					top_token_iter = iter;
 					++iter;
-#ifdef SLR_Debug
-					std::cout << "move_in state:" << action.aim_state
-						<< " term: " << action.sym << std::endl;
-#endif // SLR_Debug
+					if (debug_option & DebugOption::ParserDetail)
+						log << "move_in state:" << action.aim_state<< " term: " << action.sym << std::endl;
 					break;
 				case ActionType::move_epsilon:
 					state_stack.push(action.aim_state);
 					semantic_stack.push(nullptr);
 					top_token_iter = iter;
-#ifdef SLR_Debug
-					std::cout << "move_epsilon state:" << action.aim_state
-						<< " term: " << action.sym << std::endl;
-#endif // SLR_Debug
+					if (debug_option & DebugOption::ParserDetail)
+					log << "move_epsilon state:" << action.aim_state << " term: " << action.sym << std::endl;
 					break;
 				case ActionType::reduce:
 				{
@@ -176,22 +174,23 @@ namespace MuCplGen
 					}
 					auto goto_state = goto_table[{state_stack.top(), action.sym}];
 					state_stack.push(goto_state);
-#ifdef SLR_Debug
-					std::cout << "reduce: nonterm" << action.sym << "\n"
-						<< "\tpop amount: " << action.production_length
-						<< " push state: " << goto_state << std::endl;
-#endif // SLR_Debug
+					if (debug_option & DebugOption::ParserDetail)
+						log << "reduce: nonterm" << action.sym << "\n"
+							<< "\tpop amount: " << action.production_length
+							<< " push state: " << goto_state << std::endl;
 					auto back = semantic_action(std::move(pass), (size_t)action.sym, action.production_index, top_token_iter);
 					if (auto cast = std::any_cast<ParserErrorCode>(back))
 					{
 						switch (*cast)
 						{
 						case ParserErrorCode::Stop:
-							std::cout << information << ":SLRParse STOP for semantic Error" << std::endl;
+							if (debug_option & DebugOption::ParserError)
+								log << information << ":SLRParse STOP for semantic Error" << std::endl;
 							on = false;
 							break;
 						default:
-							std::cout << ":Parser Going On with Error Code" << std::endl;
+							if (debug_option & DebugOption::ParserDetail)
+								log << ":Parser Going On with Error Code" << std::endl;
 							semantic_stack.push(back);
 							break;
 						}
@@ -207,9 +206,12 @@ namespace MuCplGen
 					semantic_stack.push(
 						semantic_action(std::move(pass), (size_t)action.sym, action.production_index, top_token_iter)
 					);
-					SetConsoleColor(ConsoleForegroundColor::enmCFC_Yellow, ConsoleBackGroundColor::enmCBC_Blue);
-					std::cout << information << ":SLRParser Accept" << std::endl;
-					SetConsoleColor();
+					if (debug_option & DebugOption::ParserDetail)
+					{
+						SetConsoleColor(ConsoleForegroundColor::enmCFC_Yellow, ConsoleBackGroundColor::enmCBC_Blue);
+						log << information << ":SLRParser Accept" << std::endl;
+						SetConsoleColor();
+					}
 					acc = true;
 					break;
 				default:
@@ -219,7 +221,8 @@ namespace MuCplGen
 			}
 			else if (error_func)
 			{
-				std::cout << information << ":SLRParser Error" << std::endl;
+				if (debug_option & DebugOption::ParserError)
+					log << information << ":SLRParser Error" << std::endl;
 				std::vector<T> expects;
 				for (const auto& item : action_table)
 					if (std::get<0>(item.first) == state_stack.top())
@@ -234,6 +237,8 @@ namespace MuCplGen
 	template<class UserToken, typename T = size_t>
 	class LR1Parser
 	{
+		template<class Parser>
+		friend class SyntaxDirected;
 	public:
 		using Token = UserToken;
 		using SymbolType = T;
@@ -257,6 +262,7 @@ namespace MuCplGen
 		GotoTable goto_table;
 		ActionTable action_table;
 		size_t token_pointer;
+		size_t debug_option;
 	public:
 		std::string information;
 
@@ -302,7 +308,7 @@ namespace MuCplGen
 
 		bool Parse(
 			const TokenSet& token_set, TransferFunc transfer_func,
-			SemanticAction semantic_action, ErrorFunc error_func);
+			SemanticAction semantic_action, ErrorFunc error_func, std::ostream& log = std::cout);
 	};
 
 	template<class UserToken, typename T>
@@ -331,7 +337,7 @@ namespace MuCplGen
 	template<class UserToken, typename T>
 	bool LR1Parser<UserToken, T>::Parse(
 		const TokenSet& token_set, TransferFunc transfer_func,
-		SemanticAction semantic_action, ErrorFunc error_func)
+		SemanticAction semantic_action, ErrorFunc error_func, std::ostream& log)
 	{
 		auto len = token_set.size();
 		size_t top_token_iter = 0;
@@ -342,7 +348,8 @@ namespace MuCplGen
 		{
 			if (iter >= token_set.size())
 			{
-				std::cout << "tokens run out without a End_Separator" << std::endl;
+				if (debug_option & DebugOption::ParserDetail)
+					log << "tokens run out without an EndToken" << std::endl;
 				break;
 			}
 			T input_term = transfer_func(token_set[iter]);
@@ -358,19 +365,17 @@ namespace MuCplGen
 					semantic_stack.push(nullptr);
 					top_token_iter = iter;
 					++iter;
-#ifdef LR1_Debug
-					std::cout << "move_in state:" << action.aim_state
-						<< " term: " << action.sym << std::endl;
-#endif // LR1_Debug
+					if (debug_option & DebugOption::ParserDetail)
+						log << "move_in state:" << action.aim_state
+							<< " term: " << action.sym << std::endl;
 					break;
 				case ActionType::move_epsilon:
 					state_stack.push(action.aim_state);
 					semantic_stack.push(nullptr);
 					top_token_iter = iter;
-#ifdef LR1_Debug
-					std::cout << "move_epsilon state:" << action.aim_state
-						<< " term: " << action.sym << std::endl;
-#endif // LR1_Debug
+					if (debug_option & DebugOption::ParserDetail)
+						log << "move_epsilon state:" << action.aim_state
+							<< " term: " << action.sym << std::endl;
 					break;
 				case ActionType::reduce:
 				{
@@ -388,22 +393,23 @@ namespace MuCplGen
 					}
 					auto goto_state = goto_table[{state_stack.top(), action.sym}];
 					state_stack.push(goto_state);
-#ifdef LR1_Debug
-					std::cout << "reduce: nonterm" << action.sym << "\n"
-						<< "\tpop amount: " << action.production_length
-						<< " push state: " << goto_state << std::endl;
-#endif // LR1_Debug
+					if (debug_option & DebugOption::ParserDetail)
+						log << "reduce: nonterm" << action.sym << "\n"
+							<< "\tpop amount: " << action.production_length
+							<< " push state: " << goto_state << std::endl;
 					auto back = semantic_action(std::move(pass), (size_t)action.sym, action.production_index, top_token_iter);
 					if (auto cast = std::any_cast<ParserErrorCode>(back))
 					{
 						switch (*cast)
 						{
 						case ParserErrorCode::Stop:
-							std::cout << information << ":LR1Parse STOP for semantic Error" << std::endl;
+							if (debug_option & DebugOption::ParserError)
+								log << information << ":LR1Parse STOP for semantic Error" << std::endl;
 							on = false;
 							break;
 						default:
-							std::cout << ":Parser Going On with Error Code" << std::endl;
+							if (debug_option & DebugOption::ParserDetail)
+								log << ":Parser Going On with Error Code" << std::endl;
 							semantic_stack.push(back);
 							break;
 						}
@@ -419,9 +425,12 @@ namespace MuCplGen
 					semantic_stack.push(
 						semantic_action(std::move(pass), (size_t)action.sym, action.production_index, top_token_iter)
 					);
-					SetConsoleColor(ConsoleForegroundColor::enmCFC_Yellow, ConsoleBackGroundColor::enmCBC_Blue);
-					std::cout << information << ":LR1Parser Accept" << std::endl;
-					SetConsoleColor();
+					if (debug_option & DebugOption::ParserError)
+					{
+						SetConsoleColor(ConsoleForegroundColor::enmCFC_Yellow, ConsoleBackGroundColor::enmCBC_Blue);
+						log << information << ":LR1Parser Accept" << std::endl;
+						SetConsoleColor();
+					}
 					acc = true;
 					break;
 				default:
@@ -431,7 +440,8 @@ namespace MuCplGen
 			}
 			else if (error_func)
 			{
-				std::cout << information << ":LR1Parser Error" << std::endl;
+				if (debug_option & DebugOption::ParserError)
+					log << information << ":LR1Parser Error" << std::endl;
 				std::vector<T> expects;
 				for (const auto& item : action_table)
 					if (std::get<0>(item.first) == state_stack.top())

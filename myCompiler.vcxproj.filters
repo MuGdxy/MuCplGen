@@ -50,6 +50,9 @@
     <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
     <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
     <ClInclude Include="MuCplGen\Scanner.h" />
+    <ClInclude Include="MuCplGen\EasyToken.h" />
+    <ClInclude Include="MuCplGen\DebugToken.h" />
+    <ClInclude Include="MuCplGen\DebugOption.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="scanner_test.txt">

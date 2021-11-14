@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include "FileLoader.h"
+#include "EasyToken.h"
 #include "Scanner.h"
 
 namespace MuCplGen

@@ -1,3 +1,4 @@
+#include <iostream>
 #include "ILSymbolTable.h"
 
 size_t ILEntry::tabs = 0;

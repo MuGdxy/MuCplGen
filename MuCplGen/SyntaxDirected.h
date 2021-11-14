@@ -16,6 +16,7 @@
 
 namespace MuCplGen
 {
+	using namespace MuCplGen::Debug;
 	template<typename Parser>
 	class SyntaxDirected
 	{
@@ -119,7 +120,7 @@ namespace MuCplGen
 			{
 #ifdef SEMANTIC_CHECK
 				if (token.name[0] >= 'A' && token.name[0] <= 'Z')
-					std::cout << "[Semantic Check]: \n[" << token <<
+					log << "[Semantic Check]: \n[" << token <<
 					"] starts with big letter,but is recognized as term" << std::endl;
 #endif // CHECK_ON
 				return token.name;
@@ -145,6 +146,7 @@ namespace MuCplGen
 		};
 
 	private:
+		std::ostream& log;
 		std::map<std::string, NamedSemanticAction> initial_semantic_action_table;
 		std::vector<std::vector<NamedSemanticAction>> quick_semantic_action_table;
 		//std::vector<Sym> expects, size_t token_iter
@@ -174,10 +176,10 @@ namespace MuCplGen
 		void		SyntaxActionSetUpDefinition(size_t nonterm, size_t pro_index, size_t token_iter);
 		void		SyntaxActionSetHead(size_t nonterm, size_t pro_index, size_t token_iter);
 		void		SyntaxActionSetBody(size_t nonterm, size_t pro_index, size_t token_iter);
-		std::any*	SemanticActionDispatcher(std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter);
+		std::any* SemanticActionDispatcher(std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter);
 		void		ErrorActionDispatcher(std::vector<Sym> expects, size_t token_iter);
 	public:
-		SyntaxDirected(std::string path);
+		SyntaxDirected(const std::string& path, std::ostream& log = std::cout);
 
 		bool Parse(std::vector<LineContent>& input_text, TokenSet& token_set)
 		{
@@ -197,7 +199,7 @@ namespace MuCplGen
 				[this](std::vector<Sym> expects, size_t token_iter)
 				{
 					ErrorActionDispatcher(expects, token_iter);
-				});
+				}, log);
 		}
 
 		void SetInput(std::vector<LineContent>& input_text)
@@ -218,22 +220,6 @@ namespace MuCplGen
 	protected:
 		std::vector<LineContent>* input_text = nullptr;
 		TokenSet* token_set;
-		//Easy GC in Semantic Action
-		//template<typename T>
-		//T* MakeStorage(T* obj_ptr)
-		//{
-		//	auto temp = new SealedValue<T>(obj_ptr);
-		//	to_delete.push(temp);
-		//	return temp->value;
-		//}
-
-		//template<typename T>
-		//T* MakeStorageFrom(T obj)
-		//{
-		//	auto temp = new SealedValue<T>(obj);
-		//	to_delete.push(temp);
-		//	return temp->value;
-		//}
 
 		template<class T, class ...Args>
 		std::any* Create(Args&&... args)
@@ -244,10 +230,7 @@ namespace MuCplGen
 		}
 
 		template<class T>
-		T& Get(std::any* a)
-		{
-			return std::any_cast<T&>(*a);
-		}
+		T& Get(std::any* a) { return std::any_cast<T&>(*a); }
 
 		std::any* PassOn(std::vector<std::any*> data, int pos)
 		{
@@ -278,7 +261,7 @@ namespace MuCplGen
 		virtual void SetupSemanticActionTable()
 		{
 			SetConsoleColor(ConsoleForegroundColor::enmCFC_Yellow, ConsoleBackGroundColor::enmCBC_Blue);
-			std::cout << "[Warning]: Yet Haven't Set Semantic Actions!!!" << std::endl;
+			log << "[Warning]: Yet Haven't Set Semantic Actions!!!" << std::endl;
 			SetConsoleColor();
 		}
 
@@ -326,7 +309,10 @@ namespace MuCplGen
 		void Initialize()
 		{
 			CompleteSemanticActionTable();
+			my_parser.debug_option = debug_option;
 		}
+
+		size_t debug_option = 0;
 	private:
 		std::stack<Sealed*> to_delete;
 #pragma endregion
@@ -345,7 +331,8 @@ namespace MuCplGen
 	size_t SyntaxDirected<Parser>::syntax_unique_id = 0;
 
 	template<typename Parser>
-	SyntaxDirected<Parser>::SyntaxDirected(std::string path) :
+	SyntaxDirected<Parser>::SyntaxDirected(const std::string& path, std::ostream& log) :
+		log(log),
 		syntax_production_table(
 			{
 				//Whole_ -> WholeOrNone
@@ -380,21 +367,24 @@ namespace MuCplGen
 
 		slr_parser_for_syntax.SetUp(syntax_production_table, (SyntaxSymbol)(ss_end - 1), ss_end, ss_epsilon, WholeOrNone_);
 		//slr_parser_for_definition.SetUp(definition_production_table,(Syntax_Symbol)(ss_end-1),ss_end,ss_epsilon,Whole_);
-		auto inputs = FileLoader(path, "$$");
+		auto inputs = FileLoader::Load(path, "$$");
 		auto& definition_input = inputs[0];
 		auto& production_input = inputs[1];
 		token_set_for_definition = easyScanner.Scann(definition_input);
 		token_set_for_production = easyScanner.Scann(production_input);
-#define HIGH_LIGHT
-#ifdef HIGH_LIGHT
-		std::cout << "SyntaxLoader:" << std::endl;
-		std::cout << "Definition:" << std::endl;
-		Highlight(definition_input, token_set_for_definition);
-		std::cout << "Production:" << std::endl;
-		Highlight(production_input, token_set_for_production);
-#endif // HIGH_LIGHT
-		std::cout << "[Syntax Parse] START" << std::endl;
-		slr_parser_for_syntax.information = "[First Part Parse]";
+		if (debug_option & DebugOption::HighlightSyntaxFile)
+		{
+			log << "SyntaxLoader:" << std::endl;
+			log << "Definition:" << std::endl;
+			Highlight(definition_input, token_set_for_definition, log);
+			log << "Production:" << std::endl;
+			Highlight(production_input, token_set_for_production, log);
+		}
+		if (debug_option & DebugOption::SyntaxFileProcessDetail)
+		{
+			log << "[Syntax Parse] START" << std::endl;
+			slr_parser_for_syntax.information = "[First Part Parse]";
+		}
 		part = 0;
 		// Setup Candidates
 		if (!slr_parser_for_syntax.Parse(
@@ -404,111 +394,117 @@ namespace MuCplGen
 			{
 				SyntaxActionSetUpDefinition(nonterm, pro_index, token_iter);
 				return nullptr;
+			},nullptr))
+			throw std::exception("Syntax Config: Syntax Mistakes, check the first part of your syntax config text");
+			
+		slr_parser_for_syntax.Reset();
+
+		if (debug_option & DebugOption::SyntaxFileCatchedVariables)
+		{
+
+			log << "Catched Candidates(term):" << std::endl;
+			for (const auto& candidate : candidates)
+				log << candidate.sym_name << " -> "
+				<< "[type_name:" << candidate.type << "]"
+				"[name:" << candidate.name << "]" << std::endl;
+		}
+
+		if (debug_option & DebugOption::SyntaxFileProcessDetail)
+			slr_parser_for_syntax.information = "[Second Part Parse: Head]";
+		
+		part = 1;
+		// Get nonterm
+		scope_label = "_Global";
+		if (!slr_parser_for_syntax.Parse(token_set_for_production,
+			[](const EasyToken& token)->SyntaxSymbol {return TransferForSyntax(token); },
+			[this](std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)->std::any*
+			{
+				SyntaxActionSetHead(nonterm, pro_index, token_iter);
+				return nullptr;
 			},
 			nullptr))
-			throw std::exception("Syntax Config: Syntax Mistakes, check the first part of your syntax config text");
+			throw std::exception("Syntax Config: Syntax Mistakes, check the second part of your syntax config text");
 			slr_parser_for_syntax.Reset();
-#define SHOW_CATCHED_VAR
-#ifdef SHOW_CATCHED_VAR
-			std::cout << "Catched Candidates(term):" << std::endl;
-			for (const auto& candidate : candidates)
-				std::cout << candidate.sym_name << " -> "
-				<< "[type:" << candidate.type <<"]"
-				"[name:" << candidate.name <<"]" << std::endl;
-#endif // SHOW_CATCHED_VAR
+			// set the size of production_table,cause all nonterms have been recognized 
+			production_table.resize(sym_table.size());
+			quick_semantic_action_table.resize(sym_table.size());
+			epsilon = sym_table.size();
+			record.insert({ "epsilon",sym_table.size() });
+			sym_table.push_back("epsilon");
 
-			slr_parser_for_syntax.information = "[Second Part Parse: Head]";
-			part = 1;
-			// Get nonterm
+			if (debug_option & DebugOption::SyntaxFileCatchedVariables)
+			{
+				log << "Catched Heads(nonterm):" << std::endl;
+				for (size_t i = 0; i < sym_table.size() - 1; ++i)
+				{
+					log << i << " : " << sym_table[i] << std::endl;
+				}
+			}
+
+			if (debug_option & DebugOption::SyntaxFileProcessDetail)
+				slr_parser_for_syntax.information = "[Second Part Parse: Body]";
+			part = 2;
+			// Get term
 			scope_label = "_Global";
-			if (!slr_parser_for_syntax.Parse(token_set_for_production,
+			slr_parser_for_syntax.Parse(
+				token_set_for_production,
 				[](const EasyToken& token)->SyntaxSymbol {return TransferForSyntax(token); },
 				[this](std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)->std::any*
 				{
-					SyntaxActionSetHead(nonterm, pro_index, token_iter);
+					SyntaxActionSetBody(nonterm, pro_index, token_iter);
 					return nullptr;
 				},
-				nullptr))
-				throw std::exception("Syntax Config: Syntax Mistakes, check the second part of your syntax config text");
-				slr_parser_for_syntax.Reset();
-				// set the size of production_table,cause all nonterms have been recognized 
-				production_table.resize(sym_table.size());
-				quick_semantic_action_table.resize(sym_table.size());
-				epsilon = sym_table.size();
-				record.insert({ "epsilon",sym_table.size() });
-				sym_table.push_back("epsilon");
+				nullptr);
+			end = sym_table.size();
+			sym_table.push_back("$");
 
-#ifdef SHOW_CATCHED_VAR
-				std::cout << "Catched Heads(nonterm):" << std::endl;
-				for (size_t i = 0; i < sym_table.size() - 1; ++i)
-				{
-					std::cout << i << " : " << sym_table[i] << std::endl;
-				}
-#endif // SHOW_CATCHED_VAR
-
-				slr_parser_for_syntax.information = "[Second Part Parse: Body]";
-				part = 2;
-				// Get term
-				scope_label = "_Global";
-				slr_parser_for_syntax.Parse(
-					token_set_for_production,
-					[](const EasyToken& token)->SyntaxSymbol {return TransferForSyntax(token); },
-					[this](std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)->std::any*
-					{
-						SyntaxActionSetBody(nonterm, pro_index, token_iter);
-						return nullptr;
-					},
-					nullptr);
-				end = sym_table.size();
-				sym_table.push_back("$");
-
-#ifdef SHOW_CATCHED_VAR
-				std::cout << "Generated Symbols:" << std::endl;
+			if (debug_option & DebugOption::SyntaxFileCatchedVariables)
+			{
+				log << "Generated Symbols:" << std::endl;
 				for (size_t i = 0; i < sym_table.size(); ++i)
-				{
-					std::cout << i << " : " << sym_table[i] << std::endl;
-				}
-#endif // SHOW_CATCHED_VAR
-#ifdef SHOW_CATCHED_VAR
-				std::cout << "Catched ActionNames:" << std::endl;
+					log << i << " : " << sym_table[i] << std::endl;
+				log << "Catched ActionNames:" << std::endl;
 				for (const auto& item : statements)
-					std::cout << item.first << " : " << sym_table[item.second.nonterm]
+					log << item.first << " : " << sym_table[item.second.nonterm]
 					<< " -> Index[" << item.second.pro_index << "]" << std::endl;
-#endif // SHOW_CATCHED_VAR
+			}
 
-				std::cout << "[Syntax Parse] SUCCEED" << std::endl;
-				// Set Quick Candidates with the help of Candidates
+			if (debug_option & DebugOption::SyntaxFileProcessDetail)
+				log << "[Syntax Parse] SUCCEED" << std::endl;
+			// Set Quick Candidates with the help of Candidates
 
-				for (const auto& candidate : candidates)
+			for (const auto& candidate : candidates)
+			{
+				Quick_Candidate q;
+				//q.type = StringToTokenType(candidate.type);
+				q.type_name = candidate.type;
+				q.name = candidate.name;
+				q.sym = record[candidate.sym_name];
+				quick_candidates.push_back(std::move(q));
+			}
+
+			// Set rest Candidates
+			for (const auto& sym : record)
+				if (sym.second > epsilon && !candidate_record.count(sym.first))
 				{
 					Quick_Candidate q;
-					//q.type = StringToTokenType(candidate.type);
-					q.type_name = candidate.type;
-					q.name = candidate.name;
-					q.sym = record[candidate.sym_name];
+					q.type = EasyToken::TokenType::none;
+					q.type_name = "";
+					q.name = sym.first;
+					q.sym = sym.second;
 					quick_candidates.push_back(std::move(q));
 				}
 
-				// Set rest Candidates
-				for (const auto& sym : record)
-					if (sym.second > epsilon && !candidate_record.count(sym.first))
-					{
-						Quick_Candidate q;
-						q.type = EasyToken::TokenType::none;
-						q.type_name = "";
-						q.name = sym.first;
-						q.sym = sym.second;
-						quick_candidates.push_back(std::move(q));
-					}
-#ifdef SHOW_CATCHED_VAR
-				std::cout << "Generated Candidates(nonterm):" << std::endl;
-				std::cout << "Info: if your nonterm has been catched as candidate" << std::endl;
-				std::cout << "that maybe because your nonterm doesn't have any ProductionBody" << std::endl;
+			if (debug_option & DebugOption::SyntaxFileCatchedCandidates)
+			{
+				log << "Generated Candidates(nonterm):" << std::endl;
+				log << "Info: if your nonterm has been catched as candidate" << std::endl;
+				log << "that maybe because your nonterm doesn't have any ProductionBody" << std::endl;
 				for (const auto& candidate : quick_candidates)
-					std::cout << "\"" << sym_table[candidate.sym] << "\""
+					log << "\"" << sym_table[candidate.sym] << "\""
 					<< "(" << candidate.sym << ")" << " -> "
 					"[name:" << candidate.name << "]" << std::endl;
-#endif // SHOW_CATCHED_VAR
+			}
 	}
 
 	template<typename Parser>
@@ -538,17 +534,17 @@ namespace MuCplGen
 		case Head:
 		{
 			auto& token = token_set_for_definition[token_iter];
-#ifdef SEMANTIC_CHECK
-			if (token.name[0] >= 'A'
-				&& token.name[0] <= 'Z')
-				std::cout << "[Semantic Check]:\n[" << token <<
-				"] starts with big letter,but is recognized as term" << std::endl;
-#endif // CHECK_ON
+			if (debug_option & DebugOption::SyntaxFileSemanticCheck)
+			{
+				if (token.name[0] >= 'A'&& token.name[0] <= 'Z')
+					log << "[Semantic Check]:\n[" << token <<
+					"] starts with big letter,but is recognized as term" << std::endl;
+			}
 			if (token.type == EasyToken::TokenType::raw_string)
 				candidate_flag.sym_name = token.name.substr(1, token.name.size() - 2);
 			else candidate_flag.sym_name = token.name;
 		}
-			break;
+		break;
 		case IDs:
 
 			// if identifier, regard as definition via "TokenType -> terminator"
@@ -559,14 +555,12 @@ namespace MuCplGen
 			// if raw_string, regard as definition via "TokenName -> terminator"
 			else if (token_set_for_definition[token_iter].type == EasyToken::TokenType::raw_string)
 			{
-				
+
 				const auto& name = token_set_for_definition[token_iter].name;
 				candidate_flag.name = name.substr(1, name.size() - 2);
 			}
-#define CUSTOM_SYNTAX_FILE_DEBUG
-#ifdef CUSTOM_SYNTAX_FILE_DEBUG
-			std::cout << "[IDs -> ss_sym]\n" << token_set_for_production[token_iter] << std::endl;
-#endif	
+			if (debug_option & DebugOption::SyntaxFileProcessDetail)
+				log << "[IDs -> ss_sym]\n" << token_set_for_production[token_iter] << std::endl;
 			break;
 		case Body:
 			candidate_record.insert(candidate_flag.sym_name);
@@ -574,9 +568,8 @@ namespace MuCplGen
 			break;
 		case ScopeLabel:
 			scope_label = token_set_for_definition[token_iter - 1].name;
-#ifdef CUSTOM_SYNTAX_FILE_DEBUG
-			std::cout << "[ScopeLabel -> ss_sym:]\n" << token_set_for_definition[token_iter - 1] << std::endl;
-#endif
+			if (debug_option & DebugOption::SyntaxFileProcessDetail)
+				log << "[ScopeLabel -> ss_sym:]\n" << token_set_for_definition[token_iter - 1] << std::endl;
 			break;
 		default:
 			break;
@@ -590,11 +583,13 @@ namespace MuCplGen
 		{
 		case Head:// Head -> ID
 		{
-#ifdef SEMANTIC_CHECK
-			if (token_set_for_production[token_iter].name[0] >= 'a' && token_set_for_production[token_iter].name[0] <= 'z')
-				std::cout << "[Semantic Check]:\n[" << token_set_for_production[token_iter] <<
-				"] starts with small letter,but is recognized as nonterm" << std::endl;
-#endif // CHECK_ON
+			if (debug_option & DebugOption::SyntaxFileSemanticCheck)
+			{
+				if (token_set_for_production[token_iter].name[0] >= 'a' && token_set_for_production[token_iter].name[0] <= 'z')
+					log << "[Semantic Check]:\n[" << token_set_for_production[token_iter] <<
+					"] starts with small letter,but is recognized as nonterm" << std::endl;
+			}
+
 			std::string name = ScopedName(token_set_for_production[token_iter]);
 			if (!record.count(name))
 			{
@@ -602,18 +597,17 @@ namespace MuCplGen
 				heads.insert(name);
 				record.insert({ name,sym_table.size() - 1 });
 			}
-#ifdef CUSTOM_SYNTAX_FILE_DEBUG
-			std::cout << "[Head]\n" << token_set_for_production[token_iter] << std::endl;
-#endif
+			if (debug_option & DebugOption::SyntaxFileProcessDetail)
+				log << "[Head]\n" << token_set_for_production[token_iter] << std::endl;
 		}
 		break;
 		case Pro:
-#ifdef CUSTOM_SYNTAX_FILE_DEBUG
-			if (pro_index == 0)
-				std::cout << "[Pro -> Head axis Body]\n" << token_set_for_production[token_iter] << std::endl;
-			else
-				std::cout << "[Pro -> Head axis Body Statement]\n" << token_set_for_production[token_iter] << std::endl;
-#endif
+			if (debug_option & DebugOption::SyntaxFileProcessDetail)
+			{
+				if (pro_index == 0)
+					log << "[Pro -> Head axis Body]\n" << token_set_for_production[token_iter] << std::endl;
+				else log << "[Pro -> Head axis Body Statement]\n" << token_set_for_production[token_iter] << std::endl;
+			}
 			break;
 		case ID:
 			if (pro_index == 0)
@@ -625,14 +619,13 @@ namespace MuCplGen
 			break;
 		case ScopeLabel:
 			scope_label = token_set_for_production[token_iter - 1].name;
-#ifdef CUSTOM_SYNTAX_FILE_DEBUG
-			std::cout << "[ScopeLabel -> ss_sym:]\n" << token_set_for_production[token_iter - 1] << std::endl;
-#endif
+			if (debug_option & DebugOption::SyntaxFileProcessDetail)
+				log << "[ScopeLabel -> ss_sym:]\n" << token_set_for_production[token_iter - 1] << std::endl;
 			break;
 		default:
 			break;
-		}
 	}
+}
 
 	template<typename Parser>
 	void SyntaxDirected<Parser>::SyntaxActionSetBody(size_t nonterm, size_t pro_index, size_t token_iter)
@@ -681,9 +674,8 @@ namespace MuCplGen
 			current_flag.names_in_body.clear();
 			production_table[current_flag.head].push_back(std::move(production));
 			quick_semantic_action_table[current_flag.head].push_back({ "", nullptr });
-#ifdef CUSTOM_SYNTAX_FILE_DEBUG
-			std::cout << "[Body -> IDs ;]\n" << token_set_for_production[token_iter] << std::endl;
-#endif
+			if (debug_option & DebugOption::SyntaxFileProcessDetail)
+				log << "[Body -> IDs ;]\n" << token_set_for_production[token_iter] << std::endl;
 		}
 		break;
 		case ActionLabel:
@@ -699,15 +691,13 @@ namespace MuCplGen
 				});
 
 		}
-#ifdef CUSTOM_SYNTAX_FILE_DEBUG
-		std::cout << "[ActionLabel]:\n" << token_set_for_production[token_iter] << std::endl;
-#endif
+		if (debug_option & DebugOption::SyntaxFileProcessDetail)
+			log << "[ActionLabel]:\n" << token_set_for_production[token_iter] << std::endl;
 		break;
 		case ScopeLabel:
 			scope_label = token_set_for_production[token_iter - 1].name;
-#ifdef CUSTOM_SYNTAX_FILE_DEBUG
-			std::cout << "[ScopeLabel -> ss_sym:]\n" << token_set_for_production[token_iter - 1] << std::endl;
-#endif
+			if (debug_option & DebugOption::SyntaxFileProcessDetail)
+				log << "[ScopeLabel -> ss_sym:]\n" << token_set_for_production[token_iter - 1] << std::endl;
 			break;
 		default:
 			break;
@@ -717,14 +707,15 @@ namespace MuCplGen
 	template<typename Parser>
 	std::any* SyntaxDirected<Parser>::SemanticActionDispatcher(std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)
 	{
-#ifdef SHOW_PARSE_PROCESS
-		std::cout << sym_table[nonterm] << " -> ";
-		for (const auto& sym : production_table[nonterm][pro_index])
-			std::cout << sym_table[sym] << " ";
-		std::cout << "(" << (*token_set)[token_iter].name << ")" << std::endl;
 		auto& nsa = quick_semantic_action_table[nonterm][pro_index];
-		if (nsa.action != nullptr) std::cout << "Semantic Action:" << nsa.name << std::endl;
-#endif //SHOW_PARSE_PROCESS
+		if (debug_option & DebugOption::ShowReductionProcess)
+		{
+			log << sym_table[nonterm] << " -> ";
+			for (const auto& sym : production_table[nonterm][pro_index])
+				log << sym_table[sym] << " ";
+			log << "(" << (*token_set)[token_iter].name << ")" << std::endl;
+			if (nsa.action != nullptr) log << "Semantic Action:" << nsa.name << std::endl;
+		}
 		if (nsa.action == nullptr) return nullptr;
 		else return nsa.action(input, token_iter, *token_set);
 	}
@@ -734,20 +725,23 @@ namespace MuCplGen
 	{
 		if (error_action == nullptr)
 		{
-			if (input_text)
+			if (debug_option & DebugOption::SyntaxError)
 			{
-				std::stringstream ss;
-				ss << "Expected Symbol:";
-				for (const auto& item : expects)
-					ss << " \'" << sym_table[item] << "\' ";
-				Highlight(*(input_text), *(token_set), token_iter, ss.str());
+				if (input_text)
+				{
+					std::stringstream ss;
+					ss << "Expected Symbol:";
+					for (const auto& item : expects)
+						ss << " \'" << sym_table[item] << "\' ";
+					Highlight(*(input_text), *(token_set), token_iter, ss.str(), log);
+				}
+				if ((*token_set)[token_iter].IsEndToken())
+				{
+					if (token_iter > 0) log << "Missing Token After:\n" << (*token_set)[token_iter - 1] << std::endl;
+					else log << "No Symbol At All!" << std::endl;
+				}
+				else log << "Error Token:\n" << (*token_set)[token_iter] << std::endl;
 			}
-			if ((*token_set)[token_iter].IsEndToken())
-			{
-				if (token_iter > 0) std::cout << "Missing Token After:\n" << (*token_set)[token_iter - 1] << std::endl;
-				else std::cout << "No Symbol At All!" << std::endl;
-			}
-			else std::cout << "Error Token:\n" << (*token_set)[token_iter] << std::endl;
 		}
 		else error_action(std::move(expects), token_iter);
 	}

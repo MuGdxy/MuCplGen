@@ -11,6 +11,7 @@ class ILGenerator :public SyntaxDirected<SLRParser<EasyToken, size_t>>
 public:
 	ILGenerator(std::string cfg_path) :SyntaxDirected(cfg_path)
 	{
+		debug_option = Debug::DebugOption::ConciseInfo;
 		Initialize();
 	}
 	virtual void SetupSemanticActionTable() override
@@ -66,7 +67,7 @@ public:
 	{
 		if (error_info_pair.size())
 		{
-			Highlight(*input_text, *this->token_set, error_info_pair);
+			Debug::Highlight(*input_text, *this->token_set, error_info_pair);
 			return true;
 		}
 		return false;		

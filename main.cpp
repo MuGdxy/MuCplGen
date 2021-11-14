@@ -9,29 +9,26 @@
 #include <MuCplGen/SyntaxDirected.h>
 #include <Examples/ILGenerator/ILGenerator.h>
 #include <any>
-//#include <MuCplGen/Scanner.h>
 
 using namespace MuCplGen;
 
 struct MyTestCompiler : SyntaxDirected<SLRParser<size_t>>
 {
-	MyTestCompiler(std::string cfg_path) :SyntaxDirected(cfg_path)
+	std::ostream& o;
+	MyTestCompiler(std::string cfg_path, std::ostream& log = std::cout) :SyntaxDirected(cfg_path), o(log)
 	{
 		Initialize();
 	}
 };
 
-
-
 int main()
 {
-	auto input_text = FileLoader("assignment_test.txt");
+	auto input_text = FileLoader::Load("assignment_test.txt");
 	EasyScanner easyScanner;
 	auto token_set = easyScanner.Scann(input_text);
-	Highlight(input_text, token_set);
+	Debug::Highlight(input_text, token_set);
 	ILGenerator ILGen("complete_syntax.syn");
-	////MyTestCompiler test("complete_syntax.syn");
-	////test.Parse(input_text, token_set);
+	//MyTestCompiler test("complete_syntax.syn");
 	ILGen.Parse(input_text, token_set);
 	ILGen.HighlightIfHasError();
 	ILGen.ShowILCode();

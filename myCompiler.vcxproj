@@ -159,7 +159,10 @@
     <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
     <ClInclude Include="MuCplGen\ColoredText.h" />
     <ClInclude Include="MuCplGen\CustomCodeMacro.h" />
+    <ClInclude Include="MuCplGen\DebugOption.h" />
+    <ClInclude Include="MuCplGen\DebugToken.h" />
     <ClInclude Include="MuCplGen\DefinitionCompiler.h" />
+    <ClInclude Include="MuCplGen\EasyToken.h" />
     <ClInclude Include="MuCplGen\FileLoader.h" />
     <ClInclude Include="MuCplGen\Highlight.h" />
     <ClInclude Include="MuCplGen\LineContent.h" />

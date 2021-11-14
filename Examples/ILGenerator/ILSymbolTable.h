@@ -3,7 +3,7 @@
 #include <vector>
 #include <stack>
 #include <execution>
-#include <MuCplGen/Token.h>
+#include <MuCplGen/EasyToken.h>
 #include <MuCplGen/SealedValue.h>
 struct ILType
 {
