@@ -1,0 +1,15 @@
+Definition:
+type	-> 	"int";
+type	-> 	"float";
+record	->	"struct";
+num 	->	digit;
+id		->	identifier;
+$$
+Definition:
+D 		-> 	T id ";" D;
+D 		-> 	epsilon;
+T 		-> 	B C;
+B 		-> 	type;
+T 		-> 	record "{" D "}";
+C 		-> 	epsilon;
+C 		-> 	[ num ] C;

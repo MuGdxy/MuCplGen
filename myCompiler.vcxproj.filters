@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Test Files">
+      <UniqueIdentifier>{d76ebb26-975e-4c1d-8b80-8ccbe0453f86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Parser">
+      <UniqueIdentifier>{d3a1677d-3da2-4d88-97ac-c141c6d693e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scanner">
+      <UniqueIdentifier>{27ee51eb-b2f8-4882-9be0-e845155feedc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{88788759-c577-4ea4-8c75-e8d7dcd809e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Examples">
+      <UniqueIdentifier>{48be157c-5c3d-4c3e-b45f-1dceb068046e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AutoSyntax">
+      <UniqueIdentifier>{145b3342-f4be-4bde-92a1-d8afa74672f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ILGenerate">
+      <UniqueIdentifier>{2483f918-b7f8-49fd-8eb1-a5b5f8cc54f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CustomCode">
+      <UniqueIdentifier>{b0471200-11de-4c79-b7a7-1dd11ab61a41}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Examples\ILGenerator\ILSymbolTable.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MuCplGen\CustomCodeMacro.h" />
+    <ClInclude Include="MuCplGen\DefinitionCompiler.h" />
+    <ClInclude Include="MuCplGen\FileLoader.h" />
+    <ClInclude Include="MuCplGen\Highlight.h" />
+    <ClInclude Include="MuCplGen\EasyScanner.h" />
+    <ClInclude Include="MuCplGen\SealedValue.h" />
+    <ClInclude Include="MuCplGen\PushDownAutomaton.h" />
+    <ClInclude Include="MuCplGen\Parser.h" />
+    <ClInclude Include="MuCplGen\SyntaxDirected.h" />
+    <ClInclude Include="MuCplGen\LineContent.h" />
+    <ClInclude Include="MuCplGen\Token.h" />
+    <ClInclude Include="MuCplGen\ColoredText.h" />
+    <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
+    <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
+    <ClInclude Include="MuCplGen\Scanner.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="scanner_test.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="parser_test.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="my_keyword.cfg">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="definition_test.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="sample_test.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="syntax_test.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+    <Text Include="assignment_test.txt">
+      <Filter>Test Files</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="my_syntax.syn">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="definition_syntax.syn">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="control_syntax.syn">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="complete_syntax.syn">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="test_syn.syn">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

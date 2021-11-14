@@ -1,0 +1,21 @@
+int[3][2] a;
+
+char[10] hello;
+
+struct Mystruct
+{
+	int a;
+	float b;
+};
+
+Mystruct c;
+
+struct Mystruct2
+{
+	Mystruct[3] first;
+	int[3] second;
+};
+
+Mystruct2[3] d;
+
+int end;

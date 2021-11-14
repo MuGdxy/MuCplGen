@@ -1,0 +1,7 @@
+semi	->	";";
+$$
+S		->	if (B) S;
+S		->	if (B) S else S;
+S		->	while (B) S;
+S		->	S semi S;
+S		->	assign;

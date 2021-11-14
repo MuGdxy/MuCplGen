@@ -1,0 +1,19 @@
+class Student
+{
+	std::string name;
+};
+int main()
+{
+	//comment
+	double d[] = { 1, 2, 3, 4, 5 };
+	float a = 4 * 5 + 2.0 + 0.4;
+	/**************
+	 *long comment*
+	 **************/
+
+	unsigned int b = 1;
+	b << 1;
+	if(a != b) ++a;
+	std::cout << a << std::endl;
+	return (int)a / b;
+}

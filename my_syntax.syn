@@ -1,0 +1,8 @@
+num	->	digit;
+$$
+E_	->	E;				{do_E__to_E};
+E	->	E + T;			{do_plus};
+E	->	T;				{do_E_to_T};
+T	->	F;				{do_T_to_F};
+F	->	num;			{do_getid};
+

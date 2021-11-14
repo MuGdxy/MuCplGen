@@ -1,0 +1,21 @@
+int[3][2] a;
+struct Mystruct
+{
+	int a;
+	float b;
+};
+struct Mystruct2
+{
+	Mystruct[3] first;
+	int[3] second;
+};
+Mystruct2[3] d;
+d[2].first[1].b = d[2].first[0].b;
+struct Student
+{
+	int num = 0;
+	int age = 18;
+};
+Student alan;
+alan.num = 1;
+alan.age = 22;
