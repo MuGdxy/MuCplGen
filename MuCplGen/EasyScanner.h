@@ -7,6 +7,7 @@
 
 namespace MuCplGen
 {
+	using namespace MuCplGen::Debug;
 	class EasyScanner : public Scanner<EasyToken>
 	{
 		using Token = EasyToken;
@@ -36,7 +37,7 @@ namespace MuCplGen
 			num.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::number;
-				token.color = ConsoleForegroundColor::enmCFC_White;
+				token.color = ConsoleForegroundColor::White;
 				return SaveToken;
 			};
 
@@ -47,7 +48,7 @@ namespace MuCplGen
 			id.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::identifier;
-				token.color = ConsoleForegroundColor::enmCFC_White;
+				token.color = ConsoleForegroundColor::White;
 				return SaveToken;
 			};
 
@@ -57,7 +58,7 @@ namespace MuCplGen
 			arith_operator.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::arith_op;
-				token.color = ConsoleForegroundColor::enmCFC_Red;
+				token.color = ConsoleForegroundColor::Red;
 				return SaveToken;
 			};
 
@@ -67,7 +68,7 @@ namespace MuCplGen
 			assign.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::assign;
-				token.color = ConsoleForegroundColor::enmCFC_Gray;
+				token.color = ConsoleForegroundColor::Gray;
 				return SaveToken;
 			};
 
@@ -88,7 +89,7 @@ namespace MuCplGen
 			rel_op.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::rel_op;
-				token.color = ConsoleForegroundColor::enmCFC_Cyan;
+				token.color = ConsoleForegroundColor::Cyan;
 				return SaveToken;
 			};
 
@@ -100,7 +101,7 @@ namespace MuCplGen
 			keyword.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::keyword;
-				token.color = ConsoleForegroundColor::enmCFC_Blue;
+				token.color = ConsoleForegroundColor::Blue;
 				return SaveToken;
 			};
 
@@ -121,7 +122,7 @@ namespace MuCplGen
 			logic_op.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::log_op;
-				token.color = ConsoleForegroundColor::enmCFC_Purple;
+				token.color = ConsoleForegroundColor::Purple;
 				return SaveToken;
 			};
 

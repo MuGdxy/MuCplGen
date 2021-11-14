@@ -1,11 +1,11 @@
 #pragma once
-#include <Windows.h>
 #include <string>
 #include <iostream>
 #include <vector>
 #include <type_traits>
-#include "LineContent.h"
-#include "Token.h"
+#include "ColoredText.h"
+#include "../LineContent.h"
+#include "DebugToken.h"
 
 
 namespace MuCplGen::Debug
@@ -15,14 +15,14 @@ namespace MuCplGen::Debug
 	{
 		static_assert(std::is_base_of<DebugToken, Token>::value, "To Highlight, your token should derived from DebugToken");
 		if ((&log) != (&std::cout)) { log << "[token highlight only validates with std::cout]"; }
-		SetConsoleColor(enmCFC_White);
+		SetConsoleColor(ConsoleForegroundColor::White);
 		size_t start = 0;
 		if (input_text.size())
 			start = input_text[0].line_no;
 		size_t token_iter = 0;
 		for (size_t i = 0; i < input_text.size(); i++)
 		{
-			SetConsoleColor(enmCFC_White);
+			SetConsoleColor(ConsoleForegroundColor::White);
 			log << "[" << input_text[i].line_no << "\t]";
 			size_t j = 0;
 			bool over = false;
@@ -55,14 +55,14 @@ namespace MuCplGen::Debug
 				}
 				else
 				{
-					SetConsoleColor(enmCFC_Green);
+					SetConsoleColor(ConsoleForegroundColor::Green);
 					log << input_text[i].content[j];
 					++j;
 				}
 			}
 			log << std::endl;
 		}
-		SetConsoleColor(enmCFC_White);
+		SetConsoleColor(ConsoleForegroundColor::White);
 	}
 
 	template<typename Token = DebugToken>
@@ -72,7 +72,7 @@ namespace MuCplGen::Debug
 	{
 		static_assert(std::is_base_of<DebugToken, Token>::value, "To Highlight, your token should derived from DebugToken");
 		if ((&log) != (&std::cout)) { log << "[token highlight only validates with std::cout]"; }
-		SetConsoleColor(enmCFC_White);
+		SetConsoleColor(ConsoleForegroundColor::White);
 		auto error = false;
 		size_t start = 0;
 		if (input_text.size())
@@ -80,7 +80,7 @@ namespace MuCplGen::Debug
 		size_t token_iter = 0;
 		for (size_t i = 0; i < input_text.size(); i++)
 		{
-			SetConsoleColor(enmCFC_White);
+			SetConsoleColor(ConsoleForegroundColor::White);
 			log << "[" << input_text[i].line_no << "\t]";
 			size_t j = 0;
 			bool over = false;
@@ -114,7 +114,7 @@ namespace MuCplGen::Debug
 				}
 				else
 				{
-					SetConsoleColor(enmCFC_Green);
+					SetConsoleColor(ConsoleForegroundColor::Green);
 					log << input_text[i].content[j];
 					++j;
 				}
@@ -122,16 +122,16 @@ namespace MuCplGen::Debug
 			log << std::endl;
 			if (error)
 			{
-				SetConsoleColor(ConsoleForegroundColor::enmCFC_Red);
+				SetConsoleColor(ConsoleForegroundColor::Red);
 				log << "[" << input_text[i].line_no << "\t]";
 				for (size_t t = 0; t < token_set[error_iter].start; ++t)
 					log << " ";
 				log << "^" << error_info << std::endl;
-				SetConsoleColor(enmCFC_White);
+				SetConsoleColor(ConsoleForegroundColor::White);
 				error = false;
 			}
 		}
-		SetConsoleColor(enmCFC_White);
+		SetConsoleColor(ConsoleForegroundColor::White);
 	}
 
 	template<typename Token = DebugToken>
@@ -140,7 +140,7 @@ namespace MuCplGen::Debug
 	{
 		static_assert(std::is_base_of<DebugToken, Token>::value, "To Highlight, your token should derived from DebugToken");
 		if ((&log) != (&std::cout)) { log << "[token highlight only validates with std::cout]"; }
-		SetConsoleColor(enmCFC_White);
+		SetConsoleColor(ConsoleForegroundColor::White);
 		auto error = false;
 		size_t error_iter = 0;
 		size_t start = 0;
@@ -149,7 +149,7 @@ namespace MuCplGen::Debug
 		size_t token_iter = 0;
 		for (size_t i = 0; i < input_text.size(); i++)
 		{
-			SetConsoleColor(enmCFC_White);
+			SetConsoleColor(ConsoleForegroundColor::White);
 			log << "[" << input_text[i].line_no << "\t]";
 			size_t j = 0;
 			bool over = false;
@@ -184,7 +184,7 @@ namespace MuCplGen::Debug
 				}
 				else
 				{
-					SetConsoleColor(enmCFC_Green);
+					SetConsoleColor(ConsoleForegroundColor::Green);
 					log << input_text[i].content[j];
 					++j;
 				}
@@ -192,15 +192,15 @@ namespace MuCplGen::Debug
 			log << std::endl;
 			if (error)
 			{
-				SetConsoleColor(ConsoleForegroundColor::enmCFC_Red);
+				SetConsoleColor(ConsoleForegroundColor::Red);
 				log << "[" << input_text[i].line_no << "\t]";
 				for (size_t t = 0; t < token_set[error_info_pair[error_iter].first].start; ++t)
 					log << " ";
 				log << "^" << error_info_pair[error_iter++].second << std::endl;
-				SetConsoleColor(enmCFC_White);
+				SetConsoleColor(ConsoleForegroundColor::White);
 				error = false;
 			}
 		}
-		SetConsoleColor(enmCFC_White);
+		SetConsoleColor(ConsoleForegroundColor::White);
 	}
 }

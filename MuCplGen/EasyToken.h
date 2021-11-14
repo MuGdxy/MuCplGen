@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include "DebugToken.h"
+#include "DebugTool/DebugToken.h"
 
 namespace MuCplGen
 {

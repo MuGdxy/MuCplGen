@@ -9,7 +9,7 @@
 #include <any>
 #include "FileLoader.h"
 #include "EasyScanner.h"
-#include "Highlight.h"
+#include "DebugTool/Highlight.h"
 #include "Parser.h"
 #include "SealedValue.h"
 #include "CustomCodeMacro.h"
@@ -260,7 +260,7 @@ namespace MuCplGen
 
 		virtual void SetupSemanticActionTable()
 		{
-			SetConsoleColor(ConsoleForegroundColor::enmCFC_Yellow, ConsoleBackGroundColor::enmCBC_Blue);
+			SetConsoleColor(ConsoleForegroundColor::Yellow, ConsoleBackgroundColor::Blue);
 			log << "[Warning]: Yet Haven't Set Semantic Actions!!!" << std::endl;
 			SetConsoleColor();
 		}

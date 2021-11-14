@@ -38,7 +38,7 @@
     <ClInclude Include="MuCplGen\CustomCodeMacro.h" />
     <ClInclude Include="MuCplGen\DefinitionCompiler.h" />
     <ClInclude Include="MuCplGen\FileLoader.h" />
-    <ClInclude Include="MuCplGen\Highlight.h" />
+    <ClInclude Include="MuCplGen\DebugTool\Highlight.h" />
     <ClInclude Include="MuCplGen\EasyScanner.h" />
     <ClInclude Include="MuCplGen\SealedValue.h" />
     <ClInclude Include="MuCplGen\PushDownAutomaton.h" />
@@ -46,51 +46,22 @@
     <ClInclude Include="MuCplGen\SyntaxDirected.h" />
     <ClInclude Include="MuCplGen\LineContent.h" />
     <ClInclude Include="MuCplGen\Token.h" />
-    <ClInclude Include="MuCplGen\ColoredText.h" />
+    <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
     <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
     <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
     <ClInclude Include="MuCplGen\Scanner.h" />
     <ClInclude Include="MuCplGen\EasyToken.h" />
-    <ClInclude Include="MuCplGen\DebugToken.h" />
-    <ClInclude Include="MuCplGen\DebugOption.h" />
+    <ClInclude Include="MuCplGen\DebugTool\DebugToken.h" />
+    <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
+    <ClInclude Include="MuCplGen\MuCplGen.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="scanner_test.txt">
-      <Filter>Test Files</Filter>
-    </Text>
-    <Text Include="parser_test.txt">
-      <Filter>Test Files</Filter>
-    </Text>
-    <Text Include="my_keyword.cfg">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="definition_test.txt">
-      <Filter>Test Files</Filter>
-    </Text>
-    <Text Include="sample_test.txt">
-      <Filter>Test Files</Filter>
-    </Text>
-    <Text Include="syntax_test.txt">
-      <Filter>Test Files</Filter>
-    </Text>
     <Text Include="assignment_test.txt">
       <Filter>Test Files</Filter>
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <None Include="my_syntax.syn">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="definition_syntax.syn">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="control_syntax.syn">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="complete_syntax.syn">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="test_syn.syn">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

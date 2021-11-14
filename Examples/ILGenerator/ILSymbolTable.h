@@ -3,8 +3,8 @@
 #include <vector>
 #include <stack>
 #include <execution>
-#include <MuCplGen/EasyToken.h>
-#include <MuCplGen/SealedValue.h>
+#include "../../MuCplGen/EasyToken.h"
+#include "../../MuCplGen/SealedValue.h"
 struct ILType
 {
 	struct Width

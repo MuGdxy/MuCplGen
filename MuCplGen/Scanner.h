@@ -64,7 +64,7 @@ namespace MuCplGen
 									&& candidate != rule_end 
 									&& candidate->priority < rule_iter->priority)
 								{
-									substitute == false;
+									substitute = false;
 								}
 								if (substitute)
 								{

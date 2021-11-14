@@ -157,16 +157,17 @@
   <ItemGroup>
     <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
     <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
-    <ClInclude Include="MuCplGen\ColoredText.h" />
+    <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
     <ClInclude Include="MuCplGen\CustomCodeMacro.h" />
-    <ClInclude Include="MuCplGen\DebugOption.h" />
-    <ClInclude Include="MuCplGen\DebugToken.h" />
+    <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
+    <ClInclude Include="MuCplGen\DebugTool\DebugToken.h" />
     <ClInclude Include="MuCplGen\DefinitionCompiler.h" />
     <ClInclude Include="MuCplGen\EasyToken.h" />
     <ClInclude Include="MuCplGen\FileLoader.h" />
-    <ClInclude Include="MuCplGen\Highlight.h" />
+    <ClInclude Include="MuCplGen\DebugTool\Highlight.h" />
     <ClInclude Include="MuCplGen\LineContent.h" />
     <ClInclude Include="MuCplGen\EasyScanner.h" />
+    <ClInclude Include="MuCplGen\MuCplGen.h" />
     <ClInclude Include="MuCplGen\Scanner.h" />
     <ClInclude Include="MuCplGen\SealedValue.h" />
     <ClInclude Include="MuCplGen\PushDownAutomaton.h" />
@@ -176,19 +177,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="assignment_test.txt" />
-    <Text Include="definition_test.txt" />
-    <Text Include="my_keyword.cfg" />
-    <Text Include="parser_test.txt" />
-    <Text Include="sample_test.txt" />
-    <Text Include="scanner_test.txt" />
-    <Text Include="syntax_test.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="complete_syntax.syn" />
-    <None Include="control_syntax.syn" />
-    <None Include="definition_syntax.syn" />
-    <None Include="my_syntax.syn" />
-    <None Include="test_syn.syn" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

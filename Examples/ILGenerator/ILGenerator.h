@@ -2,10 +2,10 @@
 #include <MuCplGen/SyntaxDirected.h>
 #include <type_traits>
 #include "ILSymbolTable.h"
-#include <MuCplGen/Token.h>
+#include "../../MuCplGen/Token.h"
 
 using namespace MuCplGen;
-class ILGenerator :public SyntaxDirected<SLRParser<EasyToken, size_t>>
+class ILGenerator :public SyntaxDirected<LR1Parser<EasyToken, size_t>>
 {
 	
 public:
@@ -124,7 +124,7 @@ private:
 		[this](std::vector<std::any*> data, size_t iter, TokenSet& token_set)->std::any*
 	{
 		Env.SetTypeTable();
-		token_set[iter + 1].color = enmCFC_Cyan;
+		token_set[iter + 1].color = ConsoleForegroundColor::Cyan;
 		return nullptr;
 	};
 
@@ -138,7 +138,7 @@ private:
 			{
 				token_set[i].Type("custom_type");
 				token_set[i].type = EasyToken::TokenType::custom_type;
-				token_set[i].color = enmCFC_Cyan;
+				token_set[i].color = ConsoleForegroundColor::Cyan;
 			}
 		entry->width = Env.offset;
 		Env.PopEntry();
