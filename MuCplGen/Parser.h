@@ -29,6 +29,7 @@ namespace MuCplGen
 	protected:
 		using GotoTable = typename PushDownAutomaton<T>::GotoTable;
 		using ActionTable = typename PushDownAutomaton<T>::ActionTable;
+		using Action = typename PushDownAutomaton<T>::Action;
 		using ProductionTable = typename PushDownAutomaton<T>::ProductionTable;
 		using FollowTable = typename PushDownAutomaton<T>::FollowTable;
 		using State = size_t;
@@ -105,18 +106,7 @@ namespace MuCplGen
 						break;
 					case ActionType::reduce:
 					{
-						pass.clear();
-						for (size_t i = 0; i < action.production_length; i++)
-						{
-							state_stack.pop();
-							help_stack.push(semantic_stack.top());
-							semantic_stack.pop();
-						}
-						for (size_t i = 0; i < action.production_length; i++)
-						{
-							pass.push_back(help_stack.top());
-							help_stack.pop();
-						}
+						SortStack(action);
 						auto goto_state = goto_table[{state_stack.top(), action.sym}];
 						state_stack.push(goto_state);
 						if (debug_option & DebugOption::ParserDetail)
@@ -130,7 +120,7 @@ namespace MuCplGen
 							{
 							case ParserErrorCode::Stop:
 								if (debug_option & DebugOption::ParserError)
-									log << information << ":SLRParse STOP for semantic Error" << std::endl;
+									log << information << ":Parse STOP for semantic Error" << std::endl;
 								on = false;
 								break;
 							default:
@@ -144,9 +134,7 @@ namespace MuCplGen
 						break;
 					}
 					case ActionType::accept:
-						pass.clear();
-						pass.push_back(semantic_stack.top());
-						semantic_stack.pop();
+						SortStack(action);
 						on = false;
 						semantic_stack.push(
 							semantic_action(std::move(pass), (size_t)action.sym, action.production_index, top_token_iter)
@@ -154,20 +142,20 @@ namespace MuCplGen
 						if (debug_option & DebugOption::ParserDetail)
 						{
 							SetConsoleColor(ConsoleForegroundColor::Yellow, ConsoleBackgroundColor::Blue);
-							log << information << ":SLRParser Accept" << std::endl;
+							log << information << ":Parser Accept" << std::endl;
 							SetConsoleColor();
 						}
 						acc = true;
 						break;
 					default:
-						assert("Fatal Error!");
+						assert(0);
 						break;
 					}
 				}
 				else if (error_func)
 				{
 					if (debug_option & DebugOption::ParserError)
-						log << information << ":SLRParser Error" << std::endl;
+						log << information << ":Parser Error" << std::endl;
 					std::vector<T> expects;
 					for (const auto& item : action_table)
 						if (std::get<0>(item.first) == state_stack.top())
@@ -177,6 +165,23 @@ namespace MuCplGen
 				}
 			}
 			return acc;
+		}
+
+		_declspec(noinline)
+		void SortStack(Action& action)
+		{
+			pass.clear();
+			for (size_t i = 0; i < action.production_length; i++)
+			{
+				state_stack.pop();
+				help_stack.push(semantic_stack.top());
+				semantic_stack.pop();
+			}
+			for (size_t i = 0; i < action.production_length; i++)
+			{
+				pass.push_back(help_stack.top());
+				help_stack.pop();
+			}
 		}
 	};
 

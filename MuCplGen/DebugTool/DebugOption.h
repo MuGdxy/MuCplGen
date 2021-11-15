@@ -18,7 +18,7 @@ namespace MuCplGen::Debug
 
 		AllDebugInfo = HighlightSyntaxFile | SyntaxFileProcessStage | SyntaxFileProcessDetail
 		| SyntaxFileCatchedVariables | SyntaxFileCatchedCandidates | SyntaxFileSemanticCheck
-		| ShowReductionProcess | ParserDetail | ParserError,
+		| ShowReductionProcess | ParserDetail | ParserError | SyntaxError,
 
 		ConciseInfo = SyntaxFileProcessStage | ParserError | SyntaxError
 	};

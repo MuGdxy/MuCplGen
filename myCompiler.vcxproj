@@ -151,12 +151,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\ILGenerator\ILSymbolTable.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
-    <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
     <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
     <ClInclude Include="MuCplGen\CustomCodeMacro.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
@@ -168,6 +165,7 @@
     <ClInclude Include="MuCplGen\LineContent.h" />
     <ClInclude Include="MuCplGen\EasyScanner.h" />
     <ClInclude Include="MuCplGen\MuCplGen.h" />
+    <ClInclude Include="MuCplGen\CFG.h" />
     <ClInclude Include="MuCplGen\Scanner.h" />
     <ClInclude Include="MuCplGen\SealedValue.h" />
     <ClInclude Include="MuCplGen\PushDownAutomaton.h" />

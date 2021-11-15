@@ -32,7 +32,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Examples\ILGenerator\ILSymbolTable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MuCplGen\CustomCodeMacro.h" />
@@ -47,13 +46,12 @@
     <ClInclude Include="MuCplGen\LineContent.h" />
     <ClInclude Include="MuCplGen\Token.h" />
     <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
-    <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
-    <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
     <ClInclude Include="MuCplGen\Scanner.h" />
     <ClInclude Include="MuCplGen\EasyToken.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugToken.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
     <ClInclude Include="MuCplGen\MuCplGen.h" />
+    <ClInclude Include="MuCplGen\CFG.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="assignment_test.txt">
