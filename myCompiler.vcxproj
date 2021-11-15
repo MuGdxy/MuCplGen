@@ -151,9 +151,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Examples\ILGenerator\ILSymbolTable.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
+    <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
     <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
     <ClInclude Include="MuCplGen\CustomCodeMacro.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />

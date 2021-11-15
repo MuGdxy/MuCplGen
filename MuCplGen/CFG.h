@@ -25,16 +25,24 @@ namespace MuCplGen
     template<class UserToken, class T>
     struct Terminator
     {
+        template<class Parser>
+        friend class SyntaxDirected;
         using Token = UserToken;
         std::string scope;
         std::string name;
         int priority = 0;
         std::function<bool(const Token&)> translation;
+    private:
         T sym;
     };
 
     struct ParseRule
     {
+        
+        ParseRule()
+        {
+            if (!scoped_on.empty()) scope = scoped_on;
+        }
         template<class Parser>
         friend class SyntaxDirected;
         std::string action_name;
@@ -42,7 +50,10 @@ namespace MuCplGen
         std::string scope = "_Global";
         using SemanticAction = std::function<std::any* (std::vector<std::any*>)>;
     public:
+        static void SetCurrentScope(const std::string& scope) { scoped_on = scope; }
         void SetSemanticErrorAction(SemanticAction on_error) { semantic_error = on_error; }
+    private:
+        static std::string scoped_on;
 
         template<class Arg>
         static Arg GetArg(const std::vector<std::any*>& data, int index)
@@ -70,7 +81,6 @@ namespace MuCplGen
             return o;
         }
 
-    private:
         std::stack<std::any*> gc;
         SemanticAction semantic_action;
         SemanticAction semantic_error;
@@ -581,4 +591,6 @@ namespace MuCplGen
 
 
     };
+
+    std::string ParseRule::scoped_on;
 }

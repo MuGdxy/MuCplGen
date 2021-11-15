@@ -25,8 +25,9 @@ namespace MuCplGen
 	public:
 		using Token = typename Parser::Token;
 		using TokenSet = std::vector<Token>;
-	private:
 		using Sym = typename Parser::SymbolType;
+		using Term = Terminator<Token, Sym>;
+	private:
 		// A -> ¦Á
 		using Production = std::vector<Sym>;
 		// A -> ¦Á0|¦Á1|...
@@ -36,8 +37,7 @@ namespace MuCplGen
 		// ...
 		using ProductionTable = std::vector<Productions>;
 
-		using Term = Terminator<Token, Sym>;
-
+	
 		Sym start = 0;
 		Sym epsilon = 0;
 		Sym end = 0;

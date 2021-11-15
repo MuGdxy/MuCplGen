@@ -7,83 +7,47 @@
 using namespace MuCplGen;
 class ILGenerator :public SyntaxDirected<LR1Parser<EasyToken, size_t>>
 {
+	
 public:
 	ILGenerator(std::string cfg_path) :SyntaxDirected(cfg_path)
 	{
 		debug_option = Debug::DebugOption::ConciseInfo;
-
-		//bTy->keyword && "int";
-		{
-			auto t = new Term;
-			t->name = "bTy";
-			t->translation = [this](const Token& token)
-			{
-				if (token.name == "int" && token.type == Token::TokenType::keyword) return true;
-				else return false;
-			}; 
-			AddTerminator(t);
-		}
-		//bTy->keyword && "float";
-		//bTy->keyword && "char";
-		//bTy->keyword && "bool";
-		//record->keyword && "struct";
-		//record->keyword && "class";
-
-		//str->raw_string;
-		//num->number;
-		//id->identifier;
-		//cTy->custom_type;
-		//rel->rel_op;
-		//bl->keyword && "true";
-		//bl->keyword && "false";
-		
-		//_Global:
-		//	Prgm_->Prgm;
-		//	Prgm->Stmts;
-		//	Prgm->epsilon;
-
-		//	Stmts->Stmts Stmt;
-		//	Stmts->Stmt;
-		//	Blck	->	"{" Stmts "}";
-
-		//	Stmt->Open;
-		//	Stmt->Cls;
-		//	Open->IfHead Stmt;
-		//	Open->IfHead Cls "else" Open;
-
-		//	Cls->Stc;
-		//	Cls->Blck;
-		//	Cls->IfHead Cls "else" Cls;
-		//	IfHead	->	"if" "(" BExpr ")";
-		//	BExpr->_Assignment.Expr;
-
-
-		//	Stc->_Definition.Stc;
-		//	Stc->_Assignment.Asgn;
-
-
-		//_Definition:
-		//	Stc->M0 VarDef;
-		//	M0->epsilon; {begin_def};// top = var_table;
-		ParseRule::SetCurrentScope("_Definition");
-
-		{
-			auto p = new ParseRule;
-			p->action_name = "begin_def";
-			p->expression = "M0 -> epsilon";
-			p->SetAction<Empty, Empty>(
-				[this](Empty)->Empty
-				{
-					Env.SetVarTable();
-					return Empty{};
-				});
-		}
-		//	VarDef->Def;
-
-
-
-
 		Initialize();
+	}
+	virtual void SetupSemanticActionTable() override
+	{
+		AddAction(passon_0);
+		AddAction(passon_0);
+		AddAction(passon_1);
+		AddAction(begin_def);
+		AddAction(begin_typedef);
+		AddAction(end_typedef);
+		AddAction(set_typeHead);
+		AddAction(set_as_def);
+		AddAction(set_def_with_val);
+		AddAction(complete_arrayType);
+		AddAction(building_array);
+		AddAction(begin_array);
+		AddAction(set_baseType);
+		AddAction(set_customeType);
+		AddAction(get_token);
+
+		AddAction(assign);
+		AddAction(do_add);
+		AddAction(do_sub);
+		AddAction(do_mul);
+		AddAction(do_div);
+		AddAction(do_negate);
+		AddAction(create_addr);
+		AddAction(complete_lVal);
+		AddAction(start_lVal);
+		AddAction(filling_addr);
+		AddAction(start_Cmp);
+		AddAction(create_id_addr);
+		AddAction(complete_array);
+		AddAction(create_array_dimension);
+		AddAction(process_offset);
+		AddAction(inc_array_dimension);
 	}
 	void ShowTables()
 	{

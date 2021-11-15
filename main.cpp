@@ -11,10 +11,10 @@
 
 using namespace MuCplGen;
 
-struct MyTestCompiler : SyntaxDirected<LR1Parser<EasyToken,size_t>>
+struct MyTestParser : SyntaxDirected<LR1Parser<EasyToken,size_t>>
 {
 	using Term = Terminator<EasyToken, size_t>;
-	MyTestCompiler(std::string cfg_path = "", std::ostream& log = std::cout) :SyntaxDirected("", log)
+	MyTestParser(std::string cfg_path = "", std::ostream& log = std::cout) :SyntaxDirected("", log)
 	{
 		Term* t = new Term;
 		t->name = "num";
@@ -78,7 +78,7 @@ int main()
 	auto input_text = FileLoader::Load("easy.txt");
 	EasyScanner easyScanner;
 	auto tokens = easyScanner.Scann(input_text);
-	MyTestCompiler test;
+	MyTestParser test;
 	test.Parse(tokens);
 	//std::any o = 1;
 	//std::any data = EasyToken{};

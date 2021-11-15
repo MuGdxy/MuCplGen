@@ -1,0 +1,17 @@
+char c = 0;
+struct Student
+{
+	int age = 18;
+	int num = 0;
+	char[30][5] table; 
+};
+Student alan;
+int a = 1;
+int b = 2;
+int d;
+age = alan.age;
+//dimension error
+d = - alan.table[1][b][2];
+c = alan.age;
+//error token
+d = aan;
