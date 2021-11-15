@@ -194,6 +194,10 @@ namespace MuCplGen
 				{
 					body.clear();
 					ss >> body;
+					if (body == "M0")
+					{
+						auto a = 1;
+					}
 					if (body.empty()) break;
 					auto name = ScopedName(rule->scope, body);
 					if (name_to_sym.find(name) == name_to_sym.end())//not a defined nonterm
@@ -229,7 +233,7 @@ namespace MuCplGen
 
 		size_t token_iter = 0;
 	public:
-		SyntaxDirected(const std::string& path, std::ostream& log = std::cout) :log(log) {}
+		SyntaxDirected(std::ostream& log = std::cout) :log(log) {}
 
 		bool Parse(std::vector<LineContent>& input_text, TokenSet& token_set)
 		{
@@ -332,7 +336,7 @@ namespace MuCplGen
 	class TestCompiler :public SyntaxDirected<SLRParser<size_t>>
 	{
 	public:
-		TestCompiler(std::string cfg_path) :SyntaxDirected(cfg_path)
+		TestCompiler(std::ostream& log) :SyntaxDirected(log)
 		{
 
 		}

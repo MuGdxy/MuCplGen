@@ -43,7 +43,7 @@ _Definition:
 Stc		->	M0 VarDef;							
 M0		->	epsilon;							{begin_def};// top = var_table;	
 VarDef	-> 	Def;							
-
+//
 Stc		->	M1 TyDef;						
 M1		->	epsilon;							{begin_typedef};// top = type_head
 TyDef	->	TyHead "{" Defs"}" ";";			{end_typedef};// pop table;get ILEntry from TyHead;TyHead.width = offset;
@@ -80,7 +80,7 @@ Expr	->	BTpl;							{passon_0};
 BTpl	->	BFn "&&" BFn;
 BTpl	->	BFn;							{passon_0};
 BFn		->	"!" BFn;
-BFn		->	"(" BExpr ")";					{passon_1};
+BFn		->	"(" _Global.BExpr ")";					{passon_1};
 BFn		->	RVal;							{passon_0};
 RVal	->	RVal "+" Tpl;					{do_add};
 RVal	->	RVal "-" Tpl;					{do_sub};

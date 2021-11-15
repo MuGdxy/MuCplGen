@@ -17,7 +17,7 @@ namespace MuCplGen
 		{
 			Scanner::ScannRule blank;
 			blank.tokenType = "Blank";
-			blank.expression = "^( |\n|\t)+";
+			blank.expression = CommonRegex::Blank;
 			blank.onSucceed = [this](std::smatch, Token&)->ScannActionResult
 			{
 				return DiscardThisToken;
@@ -44,7 +44,7 @@ namespace MuCplGen
 			Scanner::ScannRule id;
 			id.priority = 1;
 			id.tokenType = "identifier";
-			id.expression = "^([a-z]|[A-Z]|_)\\w*";
+			id.expression = CommonRegex::Identifier;
 			id.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::identifier;
@@ -54,7 +54,7 @@ namespace MuCplGen
 
 			Scanner::ScannRule arith_operator;
 			arith_operator.tokenType = "arith_op";
-			arith_operator.expression = "^(\\+|\\-|\\*|/)";
+			arith_operator.expression = R"(^(\+|\-|\*|/))";
 			arith_operator.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::arith_op;
@@ -74,7 +74,7 @@ namespace MuCplGen
 
 			Scanner::ScannRule sep;
 			sep.tokenType = "separator";
-			sep.expression = "^(\\.|\\->|::|\\{|\\}|\\(|\\)|\\[|\\]|\\,|;|:)";
+			sep.expression = R"(^(\.|\->|::|\{|\}|\(|\)|\[|\]|\,|;|:))";
 			sep.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::separator;
@@ -107,7 +107,7 @@ namespace MuCplGen
 
 			Scanner::ScannRule raw_string;
 			raw_string.tokenType = "raw_string";
-			raw_string.expression ="^(\".*?\")|('.')";
+			raw_string.expression = CommonRegex::RawString;
 			raw_string.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::raw_string;

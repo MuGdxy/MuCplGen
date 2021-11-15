@@ -11,7 +11,7 @@ namespace MuCplGen
 
     struct PassOn
     {
-        PassOn(int i) : index(i) {}
+        PassOn(int i = 0) : index(i) {}
         int index;
     };
 
@@ -27,6 +27,7 @@ namespace MuCplGen
     {
         template<class Parser>
         friend class SyntaxDirected;
+        friend class ParseRule;
         using Token = UserToken;
         std::string scope;
         std::string name;
@@ -37,8 +38,7 @@ namespace MuCplGen
     };
 
     struct ParseRule
-    {
-        
+    { 
         ParseRule()
         {
             if (!scoped_on.empty()) scope = scoped_on;
@@ -61,7 +61,7 @@ namespace MuCplGen
             if (data[index] == nullptr)
             {
                 auto e = Empty{};
-                if (typeid(Arg) == typeid(Empty)) return *reinterpret_cast<Arg*>(&e);
+                if (typeid(std::remove_reference<Arg>::type) == typeid(Empty)) return *reinterpret_cast<std::remove_reference<Arg>::type*>(&e);
             }
             else
             {
@@ -82,8 +82,9 @@ namespace MuCplGen
         }
 
         std::stack<std::any*> gc;
-        SemanticAction semantic_action;
+        SemanticAction semantic_action = [this](std::vector<std::any*> data) { return data[0]; };
         SemanticAction semantic_error;
+
     public:
         ~ParseRule()
         {
@@ -92,6 +93,18 @@ namespace MuCplGen
                 delete gc.top();
                 gc.pop();
             }
+        }
+
+        void SetAction(void* ptr)
+        {
+            if (ptr != nullptr) throw(std::exception("ptr must be nullptr"));
+            semantic_action = nullptr;
+        }
+
+        void SetAction(const PassOn& passon)
+        {
+            int index = passon.index;
+            semantic_action = [this, index = passon.index](std::vector<std::any*> data) { return data[index]; };
         }
 
         //--{
