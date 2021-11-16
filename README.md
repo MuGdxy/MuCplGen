@@ -10,6 +10,9 @@
         	<ul align="center"><button>self-contained (without any dependencies)</button></ul>
         	<ul align="center"><button>type-safe semantic action (debug-friendly)</button></ul>
     	</td>
+    </tr>
+</table>
+---
 
 
 ![image-20211117012404591](README.assets/image-20211117012404591.png)
