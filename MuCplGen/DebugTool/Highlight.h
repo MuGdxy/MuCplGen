@@ -68,7 +68,6 @@ namespace MuCplGen::Debug
 	template<typename Token = DebugToken>
 	void Highlight(std::vector<LineContent>& input_text, std::vector<Token>& token_set,
 		size_t error_iter, std::string error_info, std::ostream& log = std::cout)
-
 	{
 		static_assert(std::is_base_of<DebugToken, Token>::value, "To Highlight, your token should derived from DebugToken");
 		if ((&log) != (&std::cout)) { log << "[token highlight only validates with std::cout]"; }

@@ -1,6 +1,6 @@
 #pragma once
-#include <MuCplGen/SyntaxDirected.h>
 #include <type_traits>
+#include "MuCplGen/SyntaxDirected.h"
 #include "ILSymbolTable.h"
 #include "../../MuCplGen/Token.h"
 

@@ -56,6 +56,7 @@
     <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
     <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
     <ClInclude Include="MuCplGen\Platform.h" />
+    <ClInclude Include="MuCplGen\MuException.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="assignment_test.txt">

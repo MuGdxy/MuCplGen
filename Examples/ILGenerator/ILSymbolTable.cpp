@@ -124,9 +124,9 @@ void ILEntry::ShowAllEntry(std::ostream& out,const ILEntry* current)
 			for (size_t j = 0; j < tabs; ++j)
 				out << "\t";
 			if (i < (*current->table_ptr).size() - 1)
-				out << "й└йд ";
+				out << "|- ";
 			else
-				out << "й╕йд ";
+				out << "+- ";
 			ShowAllEntry(out,(*current->table_ptr)[i]);
 		}
 		--tabs;

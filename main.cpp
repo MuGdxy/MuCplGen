@@ -67,7 +67,8 @@ int main()
 	ILGenerator ILGen;
 	ILGen.Parse(input_text, token_set);
 	ILGen.HighlightIfHasError();
-	ILGen.ShowILCode();
+	//ILGen.ShowILCode();
+	//ILGen.ShowTables();
 
 	//auto input_text = FileLoader::Load("easy.txt");
 	//EasyScanner easyScanner;
