@@ -25,12 +25,12 @@ namespace MuCplGen
 		using TokenSet = std::vector<Token>;
 	private:
 		using Sym = typename Parser::SymbolType;
-		// A -> ¦Á
+		// A -> ï¿½ï¿½
 		using Production = std::vector<Sym>;
-		// A -> ¦Á0|¦Á1|...
+		// A -> ï¿½ï¿½0|ï¿½ï¿½1|...
 		using Productions = std::vector<Production>;
-		// A -> ¦Á0|¦Á1|...
-		// B -> ¦Â0|¦Â2|...
+		// A -> ï¿½ï¿½0|ï¿½ï¿½1|...
+		// B -> ï¿½ï¿½0|ï¿½ï¿½2|...
 		// ...
 		using Production_Table = std::vector<Productions>;
 
@@ -398,7 +398,7 @@ namespace MuCplGen
 				SyntaxActionSetUpDefinition(nonterm, pro_index, token_iter);
 				return nullptr;
 			},nullptr))
-			throw std::exception("Syntax Config: Syntax Mistakes, check the first part of your syntax config text");
+			throw Exception("Syntax Config: Syntax Mistakes, check the first part of your syntax config text");
 			
 		slr_parser_for_syntax.Reset();
 
@@ -426,7 +426,7 @@ namespace MuCplGen
 				return nullptr;
 			},
 			nullptr))
-			throw std::exception("Syntax Config: Syntax Mistakes, check the second part of your syntax config text");
+			throw Exception("Syntax Config: Syntax Mistakes, check the second part of your syntax config text");
 			slr_parser_for_syntax.Reset();
 			// set the size of production_table,cause all nonterms have been recognized 
 			production_table.resize(sym_table.size());

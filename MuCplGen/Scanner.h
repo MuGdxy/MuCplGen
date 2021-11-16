@@ -3,7 +3,7 @@
 #include <functional>
 #include "LineContent.h"
 #include "Token.h"
-
+#include "MuException.h"
 namespace MuCplGen
 {
 	enum ScannActionResult
@@ -101,7 +101,7 @@ namespace MuCplGen
 						if (res & ScannActionResult::DiscardThisToken) discard_token = true;
 					}
 					if (!discard_token) token_set.push_back(buffer);
-					if (begin == max_match) throw std::exception("Oops...No match. Maybe check your Rules?");
+					if (begin == max_match) throw Exception("Oops...No match. Maybe check your Rules?");
 					begin = max_match;
 				}
 				if (skip_line)

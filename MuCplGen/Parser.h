@@ -8,7 +8,7 @@
 #include "PushDownAutomaton.h"
 #include "Token.h"
 #include "DebugTool/DebugOption.h"
-
+#include "MuException.h"
 
 namespace MuCplGen
 {
@@ -83,7 +83,7 @@ namespace MuCplGen
 					break;
 				}
 				T input_term = transfer_func(token_set[iter]);
-				if (state_stack.size() == 0) throw std::exception("Check if you call Initialize() in your constructor.");
+				if (state_stack.size() == 0) throw Exception("Check if you call Initialize() in your constructor.");
 				auto action_iter = action_table.find({ state_stack.top(),input_term });
 				if (action_table.find({ state_stack.top(),input_term }) != action_table.end())
 				{
@@ -170,7 +170,7 @@ namespace MuCplGen
 			return acc;
 		}
 
-		_declspec(noinline)
+		MU_NOINLINE
 		void SortStack(Action& action)
 		{
 			pass.clear();
@@ -200,17 +200,17 @@ namespace MuCplGen
 		SLRParser() { this->parser_name = "SLR"; }
 
 		SLRParser(
-			const Base::ProductionTable& production_table,
+			const typename Base::ProductionTable& production_table,
 			const T last_term, const T end_symbol,
 			const T epsilon, const T first = (T)0)
 			: SLRParser()
 		{
-			static_assert(std::is_base_of_v<BaseToken, UserToken>::value, "Your Token should be drived from BaseToken");
+			static_assert(std::is_base_of_v<BaseToken, UserToken>, "Your Token should be drived from BaseToken");
 			SetUp(production_table, last_term, end_symbol, epsilon, first);
 		}
 
 		MU_NOINLINE
-		void SetUp(const Base::ProductionTable& production_table,
+		void SetUp(const typename Base::ProductionTable& production_table,
 			const T last_term, const T end_symbol,
 			const T epsilon, const T first) override
 		{
@@ -241,12 +241,12 @@ namespace MuCplGen
 		LR1Parser() { this->parser_name = "LR1"; }
 
 		LR1Parser(
-			const Base::ProductionTable& production_table,
+			const typename Base::ProductionTable& production_table,
 			const T last_term, const T end_symbol,
 			const T epsilon, const T first = (T)0)
 			:LR1Parser()
 		{
-			static_assert(std::is_base_of_v<BaseToken, UserToken>::value, "Your Token should be drived from BaseToken");
+			static_assert(std::is_base_of_v<BaseToken, UserToken>, "Your Token should be drived from BaseToken");
 			SetUp(production_table, last_term, end_symbol, epsilon, first);
 		}
 
@@ -254,7 +254,7 @@ namespace MuCplGen
 
 		MU_NOINLINE
 		void SetUp(
-			const Base::ProductionTable& production_table,
+			const typename Base::ProductionTable& production_table,
 			const T last_term, const T end_symbol,
 			const T epsilon, const T first) override
 		{

@@ -5,6 +5,7 @@
 #include <functional>
 #include <stack>
 #include <type_traits>
+#include "MuException.h"
 namespace MuCplGen
 {
     struct Empty {};
@@ -15,11 +16,12 @@ namespace MuCplGen
         int index;
     };
 
-    struct SemanticError : public std::exception
+    struct SemanticError : public Exception
     {
-        SemanticError() {};
-        SemanticError(ParserErrorCode code) :error_code(code) {}
+        SemanticError() : Exception("SemanticError") {};
+        SemanticError(ParserErrorCode code) :Exception("SemanticError"), error_code(code){}
         ParserErrorCode error_code = ParserErrorCode::SemanticError;
+        virtual ~SemanticError() override {}
     };
 
     template<class UserToken, class T>
@@ -60,17 +62,18 @@ namespace MuCplGen
         {
             if (index >= data.size())
             {
-                throw(std::exception("Out of data range, check your Semantic Action parameters!"));
+                throw(Exception("Out of data range, check your Semantic Action parameters!"));
             }
             auto arg = data[index];
             if (arg == nullptr)
             {
                 auto e = Empty{};
-                if (typeid(std::remove_reference<Arg>::type) == typeid(Empty)) return *reinterpret_cast<std::remove_reference<Arg>::type*>(&e);
+                if (typeid(typename std::remove_reference<Arg>::type) == typeid(Empty)) 
+                return *reinterpret_cast<typename std::remove_reference<Arg>::type*>(&e);
                 else
                 {
-                    std::string name = typeid(std::remove_reference<Arg>::type).name();
-                    throw(std::exception(
+                    std::string name = typeid(typename std::remove_reference<Arg>::type).name();
+                    throw(Exception(
                         "Unmatched Type!"
                         "Type of income data is <Empty>,"
                         "while your parameter is something else."
@@ -84,7 +87,7 @@ namespace MuCplGen
             }
             std::string your_parameter_type_name = typeid(Arg).name();
             std::string data_type_name = data[index]->type().name();
-            throw(std::exception("Unmatched Type! Check your Semantic Action of this Parser Rule!"));
+            throw(Exception("Unmatched Type! Check your Semantic Action of this Parser Rule!"));
         }
 
         template<class Ret>
@@ -114,7 +117,7 @@ namespace MuCplGen
 
         void SetAction(void* ptr)
         {
-            if (ptr != nullptr) throw(std::exception("ptr must be nullptr"));
+            if (ptr != nullptr) throw(Exception("ptr must be nullptr"));
             semantic_action = nullptr;
         }
 

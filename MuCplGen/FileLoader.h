@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include "LineContent.h"
+#include "Platform.h"
 
 namespace MuCplGen
 {
@@ -11,7 +12,7 @@ namespace MuCplGen
 	{
 		static const size_t LINE_LENGTH = 4048;
 		
-		_declspec(noinline) 
+		MU_NOINLINE
 		static std::vector<LineContent> Load(const std::string& path)
 		{
 			std::vector<LineContent> lineContent;
@@ -24,7 +25,7 @@ namespace MuCplGen
 			return lineContent;
 		}
 
-		_declspec(noinline)
+		MU_NOINLINE
 		static std::vector<std::vector<LineContent>> Load(const std::string& path, std::string separator)
 		{
 			size_t iter = 0;
