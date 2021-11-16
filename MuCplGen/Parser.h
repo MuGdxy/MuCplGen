@@ -142,8 +142,10 @@ namespace MuCplGen
 						if (debug_option & DebugOption::ParserDetail)
 						{
 							SetConsoleColor(ConsoleForegroundColor::Yellow, ConsoleBackgroundColor::Blue);
-							log << information << ":Parser Accept" << std::endl;
+							log << information << ":Parser Accept";
 							SetConsoleColor();
+							log << std::endl;
+							
 						}
 						acc = true;
 						break;

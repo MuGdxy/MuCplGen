@@ -34,7 +34,12 @@ namespace MuCplGen
 			ScannAction onSucceed;
 		};
 
-		std::vector<ScannRule> rules;
+		ScannRule& CreateRule()
+		{
+			auto tmp = new ScannRule;
+			rules.push_back(tmp);
+			return *tmp;
+		}
 		ScannAction defaultAction;
 
 		std::vector<Token> Scann(const std::vector<LineContent>& input_text)
@@ -59,7 +64,7 @@ namespace MuCplGen
 					for (; rule_iter != rule_end; ++rule_iter)
 					{
 						std::smatch m;
-						if (std::regex_search(begin, end, m, rule_iter->expression))
+						if (std::regex_search(begin, end, m, (*rule_iter)->expression))
 						{
 							auto match_tail = m.suffix().first;
 							auto last = std::distance(begin, max_match);
@@ -69,7 +74,7 @@ namespace MuCplGen
 								auto substitute = true;
 								if (last == current 
 									&& candidate != rule_end 
-									&& candidate->priority < rule_iter->priority)
+									&& (*candidate)->priority < (*rule_iter)->priority)
 								{
 									substitute = false;
 								}
@@ -88,9 +93,9 @@ namespace MuCplGen
 						buffer.start = std::distance(line_head, candidate_match.prefix().second);
 						buffer.end = std::distance(line_head, candidate_match.suffix().first) - 1;
 						buffer.name = candidate_match.str();
-						buffer.Type(candidate->tokenType);
+						buffer.Type((*candidate)->tokenType);
 						ScannActionResult res = SaveToken;
-						if (candidate->onSucceed) res = candidate->onSucceed(candidate_match, buffer);
+						if ((*candidate)->onSucceed) res = (*candidate)->onSucceed(candidate_match, buffer);
 						else if (defaultAction) res = defaultAction(candidate_match, buffer);
 						if (res & ScannActionResult::SkipCurrentLine) skip_line = true;
 						if (res & ScannActionResult::DiscardThisToken) discard_token = true;
@@ -110,5 +115,8 @@ namespace MuCplGen
 			token_set.push_back(std::move(end_token));
 			return token_set;
 		}
+		~Scanner() { for (auto rule : rules) delete rule; }
+	private:
+		std::vector<ScannRule*> rules;
 	};
 }

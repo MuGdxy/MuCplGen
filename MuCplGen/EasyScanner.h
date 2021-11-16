@@ -15,7 +15,7 @@ namespace MuCplGen
 		__declspec(noinline)
 		EasyScanner()
 		{
-			Scanner::ScannRule blank;
+			auto& blank = CreateRule();
 			blank.tokenType = "Blank";
 			blank.expression = CommonRegex::Blank;
 			blank.onSucceed = [this](std::smatch, Token&)->ScannActionResult
@@ -23,7 +23,7 @@ namespace MuCplGen
 				return DiscardThisToken;
 			};
 
-			Scanner::ScannRule comment;
+			auto& comment = CreateRule();
 			comment.tokenType = "Comment";
 			comment.expression = "^//.*";
 			comment.onSucceed = [this](std::smatch, Token&)->ScannActionResult
@@ -31,7 +31,7 @@ namespace MuCplGen
 				return (ScannActionResult)(DiscardThisToken | SkipCurrentLine);
 			};
 
-			Scanner::ScannRule num;
+			auto& num = CreateRule();
 			num.tokenType = "number";
 			num.expression = "^(\\-|\\+)?\\d+(\\.\\d+)?";
 			num.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
@@ -41,7 +41,7 @@ namespace MuCplGen
 				return SaveToken;
 			};
 
-			Scanner::ScannRule id;
+			auto& id = CreateRule();
 			id.priority = 1;
 			id.tokenType = "identifier";
 			id.expression = CommonRegex::Identifier;
@@ -52,7 +52,7 @@ namespace MuCplGen
 				return SaveToken;
 			};
 
-			Scanner::ScannRule arith_operator;
+			auto& arith_operator = CreateRule();
 			arith_operator.tokenType = "arith_op";
 			arith_operator.expression = R"(^(\+|\-|\*|/))";
 			arith_operator.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
@@ -62,7 +62,7 @@ namespace MuCplGen
 				return SaveToken;
 			};
 
-			Scanner::ScannRule assign;
+			auto& assign = CreateRule();
 			assign.tokenType = "assign";
 			assign.expression = "^=";
 			assign.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
@@ -72,7 +72,7 @@ namespace MuCplGen
 				return SaveToken;
 			};
 
-			Scanner::ScannRule sep;
+			auto& sep = CreateRule();
 			sep.tokenType = "separator";
 			sep.expression = R"(^(\.|\->|::|\{|\}|\(|\)|\[|\]|\,|;|:))";
 			sep.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
@@ -83,7 +83,7 @@ namespace MuCplGen
 			};
 
 
-			Scanner::ScannRule rel_op;
+			auto& rel_op = CreateRule();
 			rel_op.tokenType = "rel_op";
 			rel_op.expression = "^(<|>|==|!=|<=|>=)";
 			rel_op.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
@@ -93,7 +93,7 @@ namespace MuCplGen
 				return SaveToken;
 			};
 
-			Scanner::ScannRule keyword;
+			auto& keyword = CreateRule();
 			keyword.tokenType = "keyword";
 			keyword.expression = 
 				"^(void|char|float|int|return|enum|struct|class|private|switch"
@@ -105,7 +105,7 @@ namespace MuCplGen
 				return SaveToken;
 			};
 
-			Scanner::ScannRule raw_string;
+			auto& raw_string = CreateRule();
 			raw_string.tokenType = "raw_string";
 			raw_string.expression = CommonRegex::RawString;
 			raw_string.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
@@ -115,7 +115,7 @@ namespace MuCplGen
 				return SaveToken;
 			};
 
-			Scanner::ScannRule logic_op;
+			auto& logic_op = CreateRule();
 			logic_op.tokenType = "log_op";
 			//<< >> ! && || & | 
 			logic_op.expression = "^(<<|>>|!|&&|\\|\\||&|\\|)";
@@ -125,18 +125,6 @@ namespace MuCplGen
 				token.color = ConsoleForegroundColor::Purple;
 				return SaveToken;
 			};
-
-			rules.push_back(blank);
-			rules.push_back(comment);
-			rules.push_back(num);
-			rules.push_back(id);
-			rules.push_back(arith_operator);
-			rules.push_back(assign);
-			rules.push_back(sep);
-			rules.push_back(rel_op);
-			rules.push_back(keyword);
-			rules.push_back(raw_string);
-			rules.push_back(logic_op);
 		}
 	};
 

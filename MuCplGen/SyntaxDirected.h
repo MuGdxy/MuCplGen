@@ -209,15 +209,14 @@ namespace MuCplGen
 							sym_to_name.push_back(body);
 							production.push_back(sym);
 
-							Term* t = new Term;
-							t->name = body;
-							t->translation = [t](const Token& token)
+							auto& t = CreateTerminator();
+							t.name = body;
+							t.translation = [&t](const Token& token)
 							{
-								if (t->name == token.name) return true;
+								if (t.name == token.name) return true;
 								else return false;
 							};
-							AddTerminator(t);
-							t->sym = sym;
+							t.sym = sym;
 						}
 						else production.push_back(name_to_sym[body]);
 					}
@@ -271,15 +270,19 @@ namespace MuCplGen
 	protected:
 		std::vector<LineContent>* input_text = nullptr;
 		
-		void AddTerminator(Term* terminator)
+		Term& CreateTerminator()
 		{
-			terminator_rules.push_back(terminator);
+			auto tmp = new Term;
+			terminator_rules.push_back(tmp);
+			return *tmp;
 		};
 
-		void AddParseRule(ParseRule* parse_rule)
+		ParseRule& CreateParseRule()
 		{
-			parse_rules.push_back(parse_rule);
-		};
+			auto tmp = new ParseRule;
+			parse_rules.push_back(tmp);
+			return *tmp;
+		}
 
 		const std::string& GetSymbolName(Sym sym)
 		{
@@ -321,7 +324,7 @@ namespace MuCplGen
 		template<class T>
 		T& Get(std::any* a) { return std::any_cast<T&>(*a); }
 
-		const TokenSet& GetTokenSet() { return *token_set; }
+		TokenSet& GetTokenSet() { return *token_set; }
 
 		size_t TokenIter() { return token_iter; }
 
