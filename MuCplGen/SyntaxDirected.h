@@ -59,7 +59,7 @@ namespace MuCplGen
 		//std::vector<Sym> expects, size_t token_iter
 		std::function<void(std::vector<Sym>, size_t)> error_action;
 
-		__declspec(noinline)
+		MU_NOINLINE
 		Sym	TokenToTerminator(const Token& token)
 		{
 			Sym sym = -1;
@@ -83,7 +83,7 @@ namespace MuCplGen
 				throw(std::logic_error("TokenToTerminator Failed"));
 			else return sym;
 		}
-		__declspec(noinline)
+		MU_NOINLINE
 		std::any* SemanticActionDispatcher(std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)
 		{
 			auto rule = quick_parse_rule_table[nonterm][pro_index];
@@ -108,7 +108,7 @@ namespace MuCplGen
 				else return rule->semantic_action(input);
 			}
 		}
-		__declspec(noinline)
+		MU_NOINLINE
 		void ErrorReductionActionDispatcher(std::vector<Sym> expects, size_t token_iter)
 		{
 			if (error_action == nullptr)
@@ -149,7 +149,7 @@ namespace MuCplGen
 			}
 		}
 
-		__declspec(noinline)
+		MU_NOINLINE
 		void SetupSymbols()
 		{
 			//start = 0 nonterm epsilon term end
@@ -299,7 +299,7 @@ namespace MuCplGen
 			return NextSemanticError(input) >= 0;
 		}
 
-		__declspec(noinline)
+		MU_NOINLINE
 		int NextSemanticError(std::vector<std::any*> input, int last = -1)
 		{
 			auto first = last + 1;

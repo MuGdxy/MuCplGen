@@ -2,7 +2,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 #else
-#error unsupported
+
 #endif
 
 //   0 = black			8 = gray
@@ -28,6 +28,16 @@ namespace MuCplGen::Debug
 		White = BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE,
 		HighWhite = BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE,
 		Black = 0,
+#else
+		Red,
+		Green,
+		Blue,
+		Yellow,
+		Purple,
+		Cyan,
+		White,
+		HighWhite,
+		Black = 0,
 #endif
 	};
 
@@ -43,6 +53,17 @@ namespace MuCplGen::Debug
 		Gray = FOREGROUND_INTENSITY,
 		White = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
 		HighWhite = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+		Black = 0,
+#else
+		Red,
+		Green,
+		Blue,
+		Yellow,
+		Purple,
+		Cyan,
+		Gray,
+		White,
+		HighWhite,
 		Black = 0,
 #endif
 	};

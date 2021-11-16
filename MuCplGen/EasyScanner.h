@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include "Platform.h"
 #include "FileLoader.h"
 #include "EasyToken.h"
 #include "Scanner.h"
@@ -12,7 +13,7 @@ namespace MuCplGen
 	{
 		using Token = EasyToken;
 	public:
-		__declspec(noinline)
+		MU_NOINLINE
 		EasyScanner()
 		{
 			auto& blank = CreateRule();

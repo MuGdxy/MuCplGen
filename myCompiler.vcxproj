@@ -169,6 +169,7 @@
     <ClInclude Include="MuCplGen\EasyScanner.h" />
     <ClInclude Include="MuCplGen\MuCplGen.h" />
     <ClInclude Include="MuCplGen\CFG.h" />
+    <ClInclude Include="MuCplGen\Platform.h" />
     <ClInclude Include="MuCplGen\Scanner.h" />
     <ClInclude Include="MuCplGen\SealedValue.h" />
     <ClInclude Include="MuCplGen\PushDownAutomaton.h" />

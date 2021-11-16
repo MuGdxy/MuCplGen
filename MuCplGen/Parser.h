@@ -4,9 +4,11 @@
 #include <vector>
 #include <type_traits>
 #include <any>
+#include "Platform.h"
 #include "PushDownAutomaton.h"
 #include "Token.h"
 #include "DebugTool/DebugOption.h"
+
 
 namespace MuCplGen
 {
@@ -64,7 +66,6 @@ namespace MuCplGen
 		using SemanticAction = std::function<std::any* (std::vector<std::any*>, size_t, size_t, size_t)>;
 		using ErrorFunc = std::function<void(std::vector<T>, size_t)>;
 
-		__declspec(noinline)
 		virtual bool Parse(const BaseParser::TokenSet& token_set, BaseParser::TransferFunc transfer_func,
 			SemanticAction semantic_action, ErrorFunc error_func = nullptr, std::ostream& log = std::cout)
 		{
@@ -208,7 +209,7 @@ namespace MuCplGen
 			SetUp(production_table, last_term, end_symbol, epsilon, first);
 		}
 
-		__declspec(noinline)
+		MU_NOINLINE
 		void SetUp(const Base::ProductionTable& production_table,
 			const T last_term, const T end_symbol,
 			const T epsilon, const T first) override
@@ -251,11 +252,11 @@ namespace MuCplGen
 
 		~LR1Parser() {}
 
-		__declspec(noinline)
+		MU_NOINLINE
 		void SetUp(
 			const Base::ProductionTable& production_table,
 			const T last_term, const T end_symbol,
-			const T epsilon, const T first)
+			const T epsilon, const T first) override
 		{
 			this->production_table = production_table;
 			auto first_table = PushDownAutomaton<T>::FIRST(
