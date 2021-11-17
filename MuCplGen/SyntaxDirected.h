@@ -13,12 +13,18 @@
 #include "DebugTool/Highlight.h"
 #include "Parser.h"
 #include "SealedValue.h"
-#include "CustomCodeMacro.h"
 #include "CFG.h"
 
 namespace MuCplGen
 {
 	using namespace MuCplGen::Debug;
+	enum class GenerationOption
+	{
+		Runtime = 0,
+		Save = 1,
+		Load = 1 << 1,
+		LoadAndSave = Load | Save
+	};
 	template<typename Parser>
 	class SyntaxDirected
 	{
@@ -121,7 +127,7 @@ namespace MuCplGen
 						ss << "Expected Symbol:";
 						for (const auto& item : expects)
 							ss << " \'" << sym_to_name[item] << "\' ";
-						Highlight(*(input_text), *(token_set), token_iter, ss.str(), log);
+						Highlight(*(input_text), *(token_set), { { token_iter, ss.str() } }, log);
 					}
 					if ((*token_set)[token_iter].IsEndToken())
 					{
@@ -231,8 +237,14 @@ namespace MuCplGen
 		}
 
 		size_t token_iter = 0;
+
+		std::filesystem::path storage = "";
 	public:
-		SyntaxDirected(std::ostream& log = std::cout) :log(log) {}
+		SyntaxDirected(std::ostream& log = std::cout): log(log) {}
+
+		void Save(const std::filesystem::path& path) { my_parser.Save(path); }
+
+		bool Load(const std::filesystem::path& path) { return my_parser.Load(path); }
 
 		bool Parse(std::vector<LineContent>& input_text, TokenSet& token_set)
 		{
@@ -242,6 +254,7 @@ namespace MuCplGen
 
 		bool Parse(TokenSet& token_set)
 		{
+			my_parser.Reset();
 			this->token_set = &token_set;
 			return my_parser.Parse(token_set,
 				[this](const Token& token) {return TokenToTerminator(token); },
@@ -270,6 +283,10 @@ namespace MuCplGen
 	protected:
 		std::vector<LineContent>* input_text = nullptr;
 		
+		GenerationOption generation_option = GenerationOption::Runtime;
+
+		void SetStorage(const std::filesystem::path& storage) { this->storage = storage; }
+
 		Term& CreateTerminator()
 		{
 			auto tmp = new Term;
@@ -315,9 +332,13 @@ namespace MuCplGen
 
 		void Initialize()
 		{
-			//CompleteSemanticActionTable();
 			SetupSymbols();
-			my_parser.SetUp(production_table, end - 1, end, epsilon, start);
+			if ((int)generation_option & (int)GenerationOption::Load && !Load(storage))
+			{
+				my_parser.SetUp(production_table, end - 1, end, epsilon, start);
+				if ((int)generation_option & (int)GenerationOption::Save) Save(storage);
+			}
+			else my_parser.Reset();
 			my_parser.debug_option = debug_option;
 		}
 		

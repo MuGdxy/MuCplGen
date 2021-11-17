@@ -35,7 +35,6 @@
     <ClCompile Include="Examples\ILGenerator\ILSymbolTable.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MuCplGen\CustomCodeMacro.h" />
     <ClInclude Include="MuCplGen\DefinitionCompiler.h" />
     <ClInclude Include="MuCplGen\FileLoader.h" />
     <ClInclude Include="MuCplGen\DebugTool\Highlight.h" />

@@ -1,3 +1,4 @@
+;:;
 char c = 0;
 struct Student
 {

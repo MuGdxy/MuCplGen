@@ -158,7 +158,6 @@
     <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
     <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
     <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
-    <ClInclude Include="MuCplGen\CustomCodeMacro.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugToken.h" />
     <ClInclude Include="MuCplGen\DefinitionCompiler.h" />

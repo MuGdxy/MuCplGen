@@ -1,9 +1,12 @@
 #pragma once
 #include <vector>
 #include <iostream>
-#include <map>
+#include <filesystem>
+#include <unordered_map>
 #include <set>
 #include <cassert>
+#include "MuException.h"
+
 enum class ActionType
 {
 	error = -1,
@@ -59,10 +62,9 @@ public:
 		int production_index;
 		// A->¦Á.B¦Â
 		int point_pos;
-
-		bool my_equals(const Item& obj) const
+		bool operator == (const Item& obj) const
 		{
-			return (int)sym == (int)obj.sym
+			return sym == obj.sym
 				&& production_index == obj.production_index
 				&& point_pos == obj.point_pos;
 		}
@@ -97,7 +99,7 @@ public:
 		//		nonterm		A		B		C		...
 		std::vector<bool> non_cores;
 
-		bool my_equals(const SimplifiedSetOfItems& set) const
+		bool operator == (const SimplifiedSetOfItems& set) const
 		{
 			if (set.cores.size() != cores.size()) return false;
 			bool eq = false;
@@ -105,7 +107,7 @@ public:
 			auto it2 = cores.begin();
 			for (; it1 != set.cores.end();)
 			{
-				eq = it2->my_equals(*it1);
+				eq = (*it2 == *it1);
 				if (!eq)
 					break;
 				++it1;
@@ -126,9 +128,9 @@ public:
 
 		T LAterm;
 
-		bool my_equals(const LR1Item& obj) const
+		bool operator == (const Item& obj)
 		{
-			return (int)nonterm == (int)obj.nonterm
+			return nonterm == obj.nonterm
 				&& production_index == obj.production_index
 				&& point_pos == obj.point_pos;
 		}
@@ -160,8 +162,85 @@ public:
 
 	using LR1Collection = std::vector<std::vector<LR1Item>>;
 
+	struct GotoHash
+	{
+		std::size_t operator()(const std::pair<size_t, T>& k) const
+		{
+			return std::hash<size_t>()(k.first) ^
+				(std::hash<T>()(k.second) << sizeof(size_t) * 4);
+		}
+	};
+
+	struct GotoEqual
+	{
+		bool operator()(const std::pair<size_t, T>& lhs, const std::pair<size_t, T>& rhs) const
+		{
+			return lhs.first == rhs.first && lhs.second == rhs.second;
+		}
+	};
+
+private:
+	template<class T>
+	static std::ostream& Save(std::ostream& o, T& t)
+	{
+		size_t pos = o.tellp();
+		if (pos == (size_t)-1)
+		{
+			auto a = 1;
+		}
+		o.write((char*)&t, sizeof(T));
+		o.seekp(pos + sizeof(T));
+		return o;
+	}
+
+	template<class T>
+	static std::istream& Load(std::istream& i, T& t)
+	{
+		size_t pos = i.tellg();
+		if (pos == (size_t)-1)
+		{
+			auto a = 1;
+		}
+		i.read((char*)&t, sizeof(T));
+		i.seekg(pos + sizeof(T));
+		return i;
+	}
+public:
+
+
 	// GOTO[state,symbol] -> next state
-	using GotoTable = std::map<std::tuple<size_t, T>, size_t>;
+	using GotoTable = std::unordered_map<std::pair<size_t, T>, size_t, GotoHash, GotoEqual>;
+
+	friend
+	std::ostream& operator << (std::ostream& o, GotoTable& gt)
+	{
+		size_t size = gt.size();
+		Save(o, size);
+		for (auto& [k, val] : gt)
+		{
+			std::pair<size_t, T> first = k;
+			Save(o, first);
+			Save(o, val);
+		}
+		return o;
+	}
+
+	friend
+	std::istream& operator >> (std::istream& i, GotoTable& gt)
+	{
+		size_t size;
+		Load(i, size);
+		gt.clear();
+		for (size_t t = 0; t < size; ++t)
+		{
+			size_t val;
+			std::pair<size_t, T> first;
+			Load(i, first);
+			Load(i, val);
+			gt.insert({ first, val });
+		}
+		return i;
+	}
 
 	// type == ActionType::move_in		aim_state available
 	// type == ActionType::reduce		nonterm,production_length available 
@@ -176,11 +255,39 @@ public:
 		size_t production_length = 0;
 	};
 
-	
-
 	// Action_Table for SLR
-	using ActionTable = std::map<std::tuple<size_t, T>, Action>;
+	using ActionTable = std::unordered_map<std::pair<size_t, T>, Action, GotoHash, GotoEqual>;
 
+	friend
+	std::ostream& operator << (std::ostream& o, ActionTable& at)
+	{
+		size_t size = at.size();
+		Save(o, size);
+		for (auto& [k,val] : at)
+		{
+			std::pair<size_t, T> first = k;
+			Save(o, first);
+			Save(o, val);
+		}
+		return o;
+	}
+
+	friend
+	std::istream& operator >> (std::istream& i, ActionTable& at)
+	{
+		size_t size;
+		Load(i, size);
+		at.clear();
+		for (size_t t = 0; t < size; ++t)
+		{
+			Action a;
+			std::pair<size_t, T> first;
+			Load(i, first);
+			Load(i, a);
+			at.insert({ first, a });
+		}
+		return i;
+	}
 
 	static void Show(const std::vector<std::set<T>>& table)
 	{
@@ -194,6 +301,7 @@ public:
 			std::cout << std::endl;
 		}
 	}
+
 	static void Show(const LL1Table& table)
 	{
 		std::cout << "nt/t\t\t";
@@ -799,7 +907,7 @@ PushDownAutomaton<T>::COLLECTION(
 				if (temp_I.cores.size())
 					for (int j = 0; j < collection.size(); ++j)
 					{
-						if (temp_I.my_equals(collection[j]))
+						if (temp_I == collection[j])
 						{
 							inexist = false;
 							// GOTO[state_i,symbol] -> state_j

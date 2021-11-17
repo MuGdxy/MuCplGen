@@ -67,6 +67,7 @@ int main()
 	ILGenerator ILGen;
 	ILGen.Parse(input_text, token_set);
 	ILGen.HighlightIfHasError();
+
 	//ILGen.ShowILCode();
 	//ILGen.ShowTables();
 

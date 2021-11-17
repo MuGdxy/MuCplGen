@@ -1,8 +1,11 @@
 #pragma once
 #include <string>
 
-struct LineContent
+namespace MuCplGen
 {
-	std::string content;
-	size_t line_no;
-};
+	struct LineContent
+	{
+		std::string content;
+		size_t line_no;
+	};
+}

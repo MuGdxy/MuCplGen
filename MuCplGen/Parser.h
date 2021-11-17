@@ -35,17 +35,16 @@ namespace MuCplGen
 		using ProductionTable = typename PushDownAutomaton<T>::ProductionTable;
 		using FollowTable = typename PushDownAutomaton<T>::FollowTable;
 		using State = size_t;
+		GotoTable goto_table;
+		ActionTable action_table;
+		
+		
+		size_t token_pointer = 0;
+		size_t debug_option = 0;
 		std::stack<State> state_stack;
 		std::stack<std::any*> semantic_stack;
 		std::stack<std::any*> help_stack;
 		std::vector<std::any*> pass;
-
-		ProductionTable production_table;
-		FollowTable follow_table;
-		GotoTable goto_table;
-		ActionTable action_table;
-		size_t token_pointer = 0;
-		size_t debug_option = 0;
 	public:
 		std::string information;
 		std::string parser_name;
@@ -53,7 +52,7 @@ namespace MuCplGen
 		virtual void SetUp(const ProductionTable& production_table,
 			const T last_term, const T end_symbol,
 			const T epsilon, const T first) = 0;
-
+		
 		void Reset()
 		{
 			token_pointer = 0;
@@ -186,6 +185,23 @@ namespace MuCplGen
 				help_stack.pop();
 			}
 		}
+
+		virtual void Save(const std::filesystem::path& path)
+		{
+			std::ofstream o(path, std::ios::binary);
+			o << action_table << goto_table;
+		}
+
+		virtual bool Load(const std::filesystem::path& path)
+		{
+			if (std::filesystem::exists(path))
+			{
+				std::ifstream i(path, std::ios::binary);
+				i >> action_table >> goto_table;
+				return true;
+			}
+			else return false;
+		}
 	};
 
 
@@ -195,7 +211,6 @@ namespace MuCplGen
 	private:
 		using Base = BaseParser<UserToken, T>;
 		using CollectionOfItemSets = typename PushDownAutomaton<T>::CollectionOfItemSets;
-		CollectionOfItemSets item_collection;
 	public:
 		SLRParser() { this->parser_name = "SLR"; }
 
@@ -214,19 +229,17 @@ namespace MuCplGen
 			const T last_term, const T end_symbol,
 			const T epsilon, const T first) override
 		{
-			this->production_table = production_table;
 			auto first_table = PushDownAutomaton<T>::FIRST(
 				production_table, epsilon, last_term, first);
-			this->follow_table = PushDownAutomaton<T>::FOLLOW(
+			auto follow_table = PushDownAutomaton<T>::FOLLOW(
 				first_table, production_table, epsilon, end_symbol, first);
 			auto back = PushDownAutomaton<T>::COLLECTION(
 				production_table, epsilon, end_symbol, first);
-			this->item_collection = std::get<0>(back);
+			auto item_collection = std::get<0>(back);
 			this->goto_table = std::get<1>(back);
 			this->action_table = PushDownAutomaton<T>::SetActionTable(
-				production_table, this->item_collection, this->goto_table, this->follow_table,
+				production_table, item_collection, this->goto_table, follow_table,
 				epsilon, end_symbol, first);
-			this->state_stack.push(0);
 		}
 	};
 
@@ -236,7 +249,6 @@ namespace MuCplGen
 	private:
 		using Base = BaseParser<UserToken, T>;
 		using LR1Collection = typename PushDownAutomaton<T>::LR1Collection;
-		LR1Collection item_collection;
 	public:
 		LR1Parser() { this->parser_name = "LR1"; }
 
@@ -258,19 +270,17 @@ namespace MuCplGen
 			const T last_term, const T end_symbol,
 			const T epsilon, const T first) override
 		{
-			this->production_table = production_table;
 			auto first_table = PushDownAutomaton<T>::FIRST(
 				production_table, epsilon, last_term, first);
-			this->follow_table = PushDownAutomaton<T>::FOLLOW(
+			auto follow_table = PushDownAutomaton<T>::FOLLOW(
 				first_table, production_table, epsilon, end_symbol, first);
 			auto back = PushDownAutomaton<T>::COLLECTION_LR(
 				production_table, first_table, epsilon, end_symbol, first);
-			this->item_collection = std::get<0>(back);
+			auto item_collection = std::get<0>(back);
 			this->goto_table = std::get<1>(back);
 			this->action_table = PushDownAutomaton<T>::SetActionTable(
-				production_table, this->item_collection, this->goto_table, this->follow_table,
+				production_table, item_collection, this->goto_table, follow_table,
 				epsilon, end_symbol, first);
-			this->state_stack.push(0);
 		}
 	};
 }

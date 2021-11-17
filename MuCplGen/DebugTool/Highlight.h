@@ -11,131 +11,8 @@
 namespace MuCplGen::Debug
 {
 	template<typename Token = DebugToken>
-	void Highlight(std::vector<LineContent>& input_text, std::vector<Token>& token_set, std::ostream& log = std::cout)
-	{
-		static_assert(std::is_base_of<DebugToken, Token>::value, "To Highlight, your token should derived from DebugToken");
-		if ((&log) != (&std::cout)) { log << "[token highlight only validates with std::cout]"; }
-		SetConsoleColor(ConsoleForegroundColor::White);
-		size_t start = 0;
-		if (input_text.size())
-			start = input_text[0].line_no;
-		size_t token_iter = 0;
-		for (size_t i = 0; i < input_text.size(); i++)
-		{
-			SetConsoleColor(ConsoleForegroundColor::White);
-			log << "[" << input_text[i].line_no << "\t]";
-			size_t j = 0;
-			bool over = false;
-			while (j < input_text[i].content.size())
-			{
-				if (token_iter >= token_set.size())
-					over = true;
-				if (!over)
-				{
-					if (token_set[token_iter].line - start == i
-						&& j <= token_set[token_iter].end
-						&& token_set[token_iter].start <= j)
-					{
-						SetConsoleColor(token_set[token_iter].color);
-						log << input_text[i].content[j];
-						++j;
-					}
-					else if (i == token_set[token_iter].line - start && j < token_set[token_iter].start
-						|| i < token_set[token_iter].line - start)
-					{
-						SetConsoleColor((ConsoleForegroundColor)0x2/*light green*/);
-						log << input_text[i].content[j];
-						++j;
-					}
-					else if (i == token_set[token_iter].line - start && j > token_set[token_iter].end
-						|| i > token_set[token_iter].line - start)
-					{
-						++token_iter;
-					}
-				}
-				else
-				{
-					SetConsoleColor(ConsoleForegroundColor::Green);
-					log << input_text[i].content[j];
-					++j;
-				}
-			}
-			log << std::endl;
-		}
-		SetConsoleColor(ConsoleForegroundColor::White);
-	}
-
-	template<typename Token = DebugToken>
 	void Highlight(std::vector<LineContent>& input_text, std::vector<Token>& token_set,
-		size_t error_iter, std::string error_info, std::ostream& log = std::cout)
-	{
-		static_assert(std::is_base_of<DebugToken, Token>::value, "To Highlight, your token should derived from DebugToken");
-		if ((&log) != (&std::cout)) { log << "[token highlight only validates with std::cout]"; }
-		SetConsoleColor(ConsoleForegroundColor::White);
-		auto error = false;
-		size_t start = 0;
-		if (input_text.size())
-			start = input_text[0].line_no;
-		size_t token_iter = 0;
-		for (size_t i = 0; i < input_text.size(); i++)
-		{
-			SetConsoleColor(ConsoleForegroundColor::White);
-			log << "[" << input_text[i].line_no << "\t]";
-			size_t j = 0;
-			bool over = false;
-			while (j < input_text[i].content.size())
-			{
-				if (token_iter >= token_set.size())
-					over = true;
-				if (!over)
-				{
-					if (token_set[token_iter].line - start == i
-						&& j <= token_set[token_iter].end
-						&& token_set[token_iter].start <= j)
-					{
-						SetConsoleColor(token_set[token_iter].color);
-						log << input_text[i].content[j];
-						++j;
-					}
-					else if (i == token_set[token_iter].line - start && j < token_set[token_iter].start
-						|| i < token_set[token_iter].line - start)
-					{
-						SetConsoleColor((ConsoleForegroundColor)0x2/*light green*/);
-						log << input_text[i].content[j];
-						++j;
-					}
-					else if (i == token_set[token_iter].line - start && j > token_set[token_iter].end
-						|| i > token_set[token_iter].line - start)
-					{
-						++token_iter;
-						if (token_iter == error_iter) error = true;
-					}
-				}
-				else
-				{
-					SetConsoleColor(ConsoleForegroundColor::Green);
-					log << input_text[i].content[j];
-					++j;
-				}
-			}
-			log << std::endl;
-			if (error)
-			{
-				SetConsoleColor(ConsoleForegroundColor::Red);
-				log << "[" << input_text[i].line_no << "\t]";
-				for (size_t t = 0; t < token_set[error_iter].start; ++t)
-					log << " ";
-				log << "^" << error_info << std::endl;
-				SetConsoleColor(ConsoleForegroundColor::White);
-				error = false;
-			}
-		}
-		SetConsoleColor(ConsoleForegroundColor::White);
-	}
-
-	template<typename Token = DebugToken>
-	void Highlight(std::vector<LineContent>& input_text, std::vector<Token>& token_set,
-		std::vector<std::pair<size_t, std::string>>& error_info_pair, std::ostream& log = std::cout)
+		const std::vector<std::pair<size_t, std::string>>& error_info_pair, std::ostream& log = std::cout)
 	{
 		static_assert(std::is_base_of<DebugToken, Token>::value, "To Highlight, your token should derived from DebugToken");
 		if ((&log) != (&std::cout)) { log << "[token highlight only validates with std::cout]"; }
@@ -176,9 +53,9 @@ namespace MuCplGen::Debug
 					else if (i == token_set[token_iter].line - start && j > token_set[token_iter].end
 						|| i > token_set[token_iter].line - start)
 					{
-						++token_iter;
 						if (error_iter < error_info_pair.size()
 							&& token_iter == error_info_pair[error_iter].first) error = true;
+						++token_iter;
 					}
 				}
 				else
@@ -201,5 +78,18 @@ namespace MuCplGen::Debug
 			}
 		}
 		SetConsoleColor(ConsoleForegroundColor::White);
+	}
+
+	template<typename Token = DebugToken>
+	void Highlight(std::vector<LineContent>& input_text, std::vector<Token>& token_set, std::ostream& log = std::cout)
+	{
+		Highlight(input_text, token_set, {}, log);
+	}
+
+	template<typename Token = DebugToken>
+	void Highlight(std::vector<LineContent>& input_text, std::vector<Token>& token_set,
+		size_t error_iter,const std::string& error_info, std::ostream& log = std::cout)
+	{
+		Highlight(input_text, token_set, { {error_iter, error_info} }, log);
 	}
 }
