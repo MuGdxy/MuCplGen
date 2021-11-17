@@ -31,8 +31,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="Examples\ILGenerator\ILSymbolTable.cpp" />
+    <ClCompile Include="Examples\ILGenerator\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MuCplGen\DefinitionCompiler.h" />
@@ -56,6 +56,7 @@
     <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
     <ClInclude Include="MuCplGen\Platform.h" />
     <ClInclude Include="MuCplGen\MuException.h" />
+    <ClInclude Include="MuCplGen\DebugTool\StopWatch.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="assignment_test.txt">

@@ -24,7 +24,7 @@ namespace MuCplGen
 	struct Scanner
 	{
 	public:
-		using ScannAction = std::function<ScannActionResult(std::smatch, Token&)>;
+		using ScannAction = std::function<ScannActionResult(std::smatch&, Token&)>;
 
 		struct ScannRule
 		{

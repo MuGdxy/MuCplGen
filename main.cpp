@@ -8,6 +8,7 @@
 #include "Examples/ILGenerator/ILGenerator.h"
 #include "MuCplGen/SyntaxDirected.h"
 #include "MuCplGen/CFG.h"
+#include "MuCplGen/DebugTool/StopWatch.h"
 
 using namespace MuCplGen;
 
@@ -60,6 +61,8 @@ struct MyTestParser : SyntaxDirected<LR1Parser<EasyToken,size_t>>
 
 int main()
 {
+	StopWatch sw;
+	sw.Start();
 	auto input_text = FileLoader::Load("assignment_test.txt");
 	EasyScanner easyScanner;
 	auto token_set = easyScanner.Scann(input_text);
@@ -67,7 +70,8 @@ int main()
 	ILGenerator ILGen;
 	ILGen.Parse(input_text, token_set);
 	ILGen.HighlightIfHasError();
-
+	sw.Stop();
+	std::cout << sw;
 	//ILGen.ShowILCode();
 	//ILGen.ShowTables();
 

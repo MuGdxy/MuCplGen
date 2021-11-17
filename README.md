@@ -17,16 +17,96 @@
 
 ![image-20211117012404591](README.assets/image-20211117012404591.png)
 
+## Introduction
+
+**MuCompilerGenerator(MuCplGen)** is a Header-Only dynamic compiler generator based on C++ 17.
+
+**MuCplGen** covers the front-end of a compiler, which can be divided into 2 parts, respectively **Scanner** and **Parser**. A **Scanner** employs  a **Determined Finite Automaton(DFA)**  to tokenize a series of words. While the rule for word match is called **Regular Expression(Regex)**. And the output of a **Scanner** is a token list, every token in the list contains the info of the word recognized, e.g. the line number, the type, and so on.  Then **Parser** takes the list of tokens as input, working as a **Push Down Automaton(PDA)** to decide whether the token sequence satisfies the designed **Context Free Grammar(CFG)**.
+
+It's annoying to construct **DFA** and **PDA** by yourself(manually), however they are theoretically possible to generate automatically with certain algorithm. **MuCplGen** takes the dull job of this part. 
+
+The only things you need to do is:
+
+- Define the **Token**
+- Define the **Regex Rules** for **Scanner**
+- Define the **Transform** between **tokens** and **terminators**.
+- Define the **CFG** and **Semantic Action** for **Parser**
+
+Yes, your job is to give rules.
+
+## Include MuCplGen
+
+MuCplGen is header-only, copy the folder `MuCplGen` to your include folder, and everything done.
+
+If you want to run the Examples, CMake is required. CMake GUI is recommended.
+
+command line:
+
+```shell
+mkdir build
+cd build
+cmake ..
+cmake --build
+```
+
+if you are Linux user, make sure that you g++8 is available. [linux install g++8](#install g++8)
+
+## Requirement
+
+|         | c++ std | compiler   |
+| ------- | ------- | ---------- |
+| Windows | c++17   | MVSC       |
+| Linux   | c++17   | g++8       |
+| other   | c++17   | :question: |
+
+## Quick Start
+
+In this part we are going to create an easy calculator from scratch, covering using predefined  `EasyScanner`,  implementing a **Parser** and defining its rules.
+
+[TODO]
+
 ## Scanner
 
 Regular Expression (Regex) based.
 
-| type            | field                              | detail                             |
-| --------------- | ---------------------------------- | ---------------------------------- |
-| `std::string`   | [`tokenType`](#Regex with Action)  | readability string token type name |
-| `std::regex`    | [`expression`](#Regex with Action) | regex rule                         |
-| `int`           | [`priority`](#Recognize Priority)  | to solve conflicts                 |
-| `std::function` | [`onSucceed`](#Scanner Action)     | callback when token recognized     |
+- Regex Rule for Scanner
+
+    | type            | field                              | detail                             |
+    | --------------- | ---------------------------------- | ---------------------------------- |
+    | `std::string`   | [`tokenType`](#Regex with Action)  | readability string token type name |
+    | `std::regex`    | [`expression`](#Regex with Action) | regex rule                         |
+    | `int`           | [`priority`](#Recognize Priority)  | to solve conflicts                 |
+    | `std::function` | [`onSucceed`](#Scanner Action)     | callback when token recognized     |
+
+### How Custom Scanner Looks like
+
+```cpp
+struct CustomToken : public BaseToken
+{
+    ...
+}
+
+class CustomScanner : public Scanner<CustomToken>
+{
+    using Token = CustomToken;
+    CustomScanner()
+    {
+        auto& rule = CreateRule();
+        rule.tokenType = "typename";
+        //regular expression
+        rule.expression = R"(....)";
+        rule.priority = 0;
+        //action
+        rule.onSucceed = 
+           	[this](std::smatch&, Token& token)->ScannActionResult
+        	{
+            	return SaveToken;
+        	};
+        //other rules
+        ...
+    }
+}
+```
 
 ### Regex with Action
 
@@ -37,7 +117,7 @@ num.tokenType = "number";
 //regex
 num.expression = R"(^(\-|\+)?\d+(\.\d+)?)";
 //action to do when a token is recoginized
-num.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
+num.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 {
     //custom data, for fast token type dicision
     token.type = Token::TokenType::number;
@@ -50,6 +130,8 @@ num.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 
 :heavy_exclamation_mark:	**Remember** to start your regex with `^`, or something weird may happen. e.g. `Hhello` will match the regex `hello`.
 
+`std::smatch&` is the regex match info, in this case,  ignored.
+
 - view: [EasyScanner.h](MuCplGen/EasyScanner.h)
 
 ### Scanner Action
@@ -58,7 +140,7 @@ num.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
 auto& blank = CreateRule();
 blank.tokenType = "Blank";
 blank.expression = CommonRegex::Blank;
-blank.onSucceed = [this](std::smatch, Token&)->ScannActionResult
+blank.onSucceed = [this](std::smatch&, Token&)->ScannActionResult
 {
     //to ignore blank as ' ', '\t', '\n' ...
     //if you need the blank token, never Discard it. (e.g. python keeps the blank token)
@@ -68,7 +150,7 @@ blank.onSucceed = [this](std::smatch, Token&)->ScannActionResult
 auto& comment = CreateRule();
 comment.tokenType = "Comment";
 comment.expression = "^//.*";
-comment.onSucceed = [this](std::smatch, Token&)->ScannActionResult
+comment.onSucceed = [this](std::smatch&, Token&)->ScannActionResult
 {
     //Skip current line
     //usually, comment should be removed by preprocessor
@@ -87,20 +169,7 @@ Default action is to "Save the Token" and of course you can set the default acti
 struct Scanner
 {
 public:
-    using ScannAction = std::function<ScannActionResult(std::smatch, Token&)>;
-    struct ScannRule
-    {
-        int priority = 0;
-        std::string tokenType;
-        std::regex expression;
-        ScannAction onSucceed;
-    };
-    ScannRule& CreateRule()
-    {
-        auto tmp = new ScannRule;
-        rules.push_back(tmp);
-        return *tmp;
-    }
+    using ScannAction = std::function<ScannActionResult(std::smatch&, Token&)>;
     ScannAction defaultAction;
     ...
 }
@@ -108,7 +177,7 @@ public:
 
 - view: [Scanner.h](MuCplGen/Scanner.h)
 
-### Recognize Priority
+### Priority
 
 Sometimes conflicts occur, e.g. custom-defined identifier may be the same as your predefined keyword, so there's a priority option for you.
 
@@ -207,4 +276,23 @@ Context Free Grammar (CFG) based.
 | SLR        | `SLRParser<UserToken,T>` | :heavy_check_mark: |
 | LR1        | `LR1Parser<UserToken,T>` | :heavy_check_mark: |
 | BaseParser |                          | :x:                |
+
+# Appendix
+
+## Install g++8
+
+### ubuntu
+
+bash
+
+```shell
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get update
+sudo apt-get install g++-8
+#set g++8 as defualt
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 100
+sudo update-alternatives --config g++
+#check the version
+g++ --version
+```
 

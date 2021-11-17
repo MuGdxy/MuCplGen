@@ -152,7 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Examples\ILGenerator\ILSymbolTable.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Examples\ILGenerator\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
@@ -160,6 +160,7 @@
     <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugToken.h" />
+    <ClInclude Include="MuCplGen\DebugTool\StopWatch.h" />
     <ClInclude Include="MuCplGen\DefinitionCompiler.h" />
     <ClInclude Include="MuCplGen\EasyToken.h" />
     <ClInclude Include="MuCplGen\FileLoader.h" />

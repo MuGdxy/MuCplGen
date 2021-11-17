@@ -19,7 +19,7 @@ namespace MuCplGen
 			auto& blank = CreateRule();
 			blank.tokenType = "Blank";
 			blank.expression = CommonRegex::Blank;
-			blank.onSucceed = [this](std::smatch, Token&)->ScannActionResult
+			blank.onSucceed = [this](std::smatch&, Token&)->ScannActionResult
 			{
 				return DiscardThisToken;
 			};
@@ -27,7 +27,7 @@ namespace MuCplGen
 			auto& comment = CreateRule();
 			comment.tokenType = "Comment";
 			comment.expression = "^//.*";
-			comment.onSucceed = [this](std::smatch, Token&)->ScannActionResult
+			comment.onSucceed = [this](std::smatch&, Token&)->ScannActionResult
 			{
 				return (ScannActionResult)(DiscardThisToken | SkipCurrentLine);
 			};
@@ -35,7 +35,7 @@ namespace MuCplGen
 			auto& num = CreateRule();
 			num.tokenType = "number";
 			num.expression = R"(^(\-|\+)?\d+(\.\d+)?)";
-			num.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
+			num.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::number;
 				token.color = ConsoleForegroundColor::White;
@@ -46,7 +46,7 @@ namespace MuCplGen
 			id.priority = 1;
 			id.tokenType = "identifier";
 			id.expression = CommonRegex::Identifier;
-			id.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
+			id.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::identifier;
 				token.color = ConsoleForegroundColor::White;
@@ -56,7 +56,7 @@ namespace MuCplGen
 			auto& arith_operator = CreateRule();
 			arith_operator.tokenType = "arith_op";
 			arith_operator.expression = R"(^(\+|\-|\*|/))";
-			arith_operator.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
+			arith_operator.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::arith_op;
 				token.color = ConsoleForegroundColor::Red;
@@ -66,7 +66,7 @@ namespace MuCplGen
 			auto& assign = CreateRule();
 			assign.tokenType = "assign";
 			assign.expression = "^=";
-			assign.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
+			assign.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::assign;
 				token.color = ConsoleForegroundColor::Gray;
@@ -76,7 +76,7 @@ namespace MuCplGen
 			auto& sep = CreateRule();
 			sep.tokenType = "separator";
 			sep.expression = R"(^(\.|\->|::|\{|\}|\(|\)|\[|\]|\,|;|:))";
-			sep.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
+			sep.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::separator;
 				token.color = (ConsoleForegroundColor)14;
@@ -87,7 +87,7 @@ namespace MuCplGen
 			auto& rel_op = CreateRule();
 			rel_op.tokenType = "rel_op";
 			rel_op.expression = "^(<|>|==|!=|<=|>=)";
-			rel_op.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
+			rel_op.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::rel_op;
 				token.color = ConsoleForegroundColor::Cyan;
@@ -99,7 +99,7 @@ namespace MuCplGen
 			keyword.expression = 
 				"^(void|char|float|int|return|enum|struct|class|private|switch"
 				"|case|break|default|if|else|while|do)";
-			keyword.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
+			keyword.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::keyword;
 				token.color = ConsoleForegroundColor::Blue;
@@ -109,7 +109,7 @@ namespace MuCplGen
 			auto& raw_string = CreateRule();
 			raw_string.tokenType = "raw_string";
 			raw_string.expression = CommonRegex::RawString;
-			raw_string.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
+			raw_string.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::raw_string;
 				token.color = (ConsoleForegroundColor)12;
@@ -120,7 +120,7 @@ namespace MuCplGen
 			logic_op.tokenType = "log_op";
 			//<< >> ! && || & | 
 			logic_op.expression = "^(<<|>>|!|&&|\\|\\||&|\\|)";
-			logic_op.onSucceed = [this](std::smatch, Token& token)->ScannActionResult
+			logic_op.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::log_op;
 				token.color = ConsoleForegroundColor::Purple;
