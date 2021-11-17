@@ -186,21 +186,25 @@ namespace MuCplGen
 			}
 		}
 
-		virtual void Save(const std::filesystem::path& path)
+		virtual void Save(const std::string& path)
 		{
 			std::ofstream o(path, std::ios::binary);
 			o << action_table << goto_table;
 		}
 
-		virtual bool Load(const std::filesystem::path& path)
+		virtual bool Load(const std::string& path)
 		{
-			if (std::filesystem::exists(path))
+			auto error = false;
+			try
 			{
 				std::ifstream i(path, std::ios::binary);
 				i >> action_table >> goto_table;
-				return true;
 			}
-			else return false;
+			catch (std::exception e)
+			{
+				error = true;
+			}
+			return !error;
 		}
 	};
 

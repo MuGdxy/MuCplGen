@@ -365,4 +365,4 @@ x64/Debug/
 x86/Debug/
 
 # for MuCplGen's binary storage file
-storage
+storage/

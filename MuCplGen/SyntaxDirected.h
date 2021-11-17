@@ -238,13 +238,13 @@ namespace MuCplGen
 
 		size_t token_iter = 0;
 
-		std::filesystem::path storage = "";
+		std::string storage = "";
 	public:
 		SyntaxDirected(std::ostream& log = std::cout): log(log) {}
 
-		void Save(const std::filesystem::path& path) { my_parser.Save(path); }
+		void Save(const std::string& path) { my_parser.Save(path); }
 
-		bool Load(const std::filesystem::path& path) { return my_parser.Load(path); }
+		bool Load(const std::string& path) { return my_parser.Load(path); }
 
 		bool Parse(std::vector<LineContent>& input_text, TokenSet& token_set)
 		{
@@ -285,7 +285,7 @@ namespace MuCplGen
 		
 		GenerationOption generation_option = GenerationOption::Runtime;
 
-		void SetStorage(const std::filesystem::path& storage) { this->storage = storage; }
+		void SetStorage(const std::string& storage) { this->storage = storage; }
 
 		Term& CreateTerminator()
 		{
