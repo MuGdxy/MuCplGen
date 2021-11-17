@@ -29,7 +29,7 @@ public:
 						|| token.name == "char"
 						|| token.name == "bool") return true;
 				}
-				else return false;
+				return false;
 			};
 		}
 
@@ -45,7 +45,7 @@ public:
 					if (token.name == "struct"
 						|| token.name == "class") return true;
 				}
-				else return false;
+				return false;
 			};
 		}
 		//str->raw_string;
@@ -111,7 +111,7 @@ public:
 				{
 					if (token.name == "false" || token.name == "true") return true;
 				}
-				else return false;
+				return false;
 			};
 		}
 

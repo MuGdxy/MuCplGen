@@ -1,17 +1,29 @@
 cmake_minimum_required(VERSION 3.1)
 project(MuCplGen)
-
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(gpp off)
+message("System=${CMAKE_SYSTEM_NAME}")
+message("Compiler=${CMAKE_CXX_COMPILER_ID}")
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    set(gpp on)
+endif()
 
-option(Examples "Build Examples" ON)
+set(CMAKE_CXX_FLAGS "--std=c++17 -lstdc++fs")
+
+set(CMAKE_CXX_STANDARD_REQUIRED true)
+
+option(Examples "Build Examples" on)
 
 if(Examples)
     add_executable(ILGenerator
         "Examples/ILGenerator/main.cpp"
         "Examples/ILGenerator/ILSymbolTable.cpp"
         )
+    if(gpp)
+        target_link_libraries(ILGenerator stdc++fs)
+        message("link: stdc++fs")
+    endif()
     file(COPY "${PROJECT_SOURCE_DIR}/assignment_test.txt" DESTINATION ${PROJECT_BINARY_DIR})
 endif(Examples)
 

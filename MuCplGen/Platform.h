@@ -6,3 +6,4 @@
 #if defined(__GNUC__)
 #define MU_NOINLINE __attribute__ ((noinline))
 #endif
+

@@ -29,15 +29,15 @@ namespace MuCplGen::Debug
 		HighWhite = BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE,
 		Black = 0,
 #else
-		Red,
-		Green,
-		Blue,
-		Yellow,
-		Purple,
-		Cyan,
-		White,
-		HighWhite,
-		Black = 0,
+		Black = 9,
+		Red = 1,
+		Green = 2,
+		Yellow = 3,
+		Blue = 4,
+		Purple = 5,
+		Cyan = 6,
+		White = 7,
+		Gray = 7
 #endif
 	};
 
@@ -55,16 +55,15 @@ namespace MuCplGen::Debug
 		HighWhite = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
 		Black = 0,
 #else
-		Red,
-		Green,
-		Blue,
-		Yellow,
-		Purple,
-		Cyan,
-		Gray,
-		White,
-		HighWhite,
 		Black = 0,
+		Red = 1,
+		Green = 2,
+		Yellow = 3,
+		Blue = 4,
+		Purple = 5,
+		Cyan = 6,
+		White = 7,
+		Gray = 7
 #endif
 	};
 
@@ -76,6 +75,11 @@ namespace MuCplGen::Debug
 #ifdef _WIN32
 		HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 		SetConsoleTextAttribute(handle, (WORD)foreColor | (WORD)backColor);
+#endif
+#ifdef __GNUC__
+		if((int)foreColor >= 8 || (int)foreColor < 0) foreColor = ConsoleForegroundColor::White;
+		if((int)backColor >= 8 || (int)backColor < 0) backColor = ConsoleBackgroundColor::Black;
+		std::cout << "\e[" << 30 + (int)foreColor <<";" << 40 + (int)backColor << "m";
 #endif
 	}
 }

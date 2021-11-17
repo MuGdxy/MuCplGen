@@ -67,9 +67,10 @@ namespace MuCplGen
             auto arg = data[index];
             if (arg == nullptr)
             {
+                //to fool the compiler
                 auto e = Empty{};
                 if (typeid(typename std::remove_reference<Arg>::type) == typeid(Empty)) 
-                return *reinterpret_cast<typename std::remove_reference<Arg>::type*>(&e);
+                    return *reinterpret_cast<typename std::remove_reference<Arg>::type*>(&e);
                 else
                 {
                     std::string name = typeid(typename std::remove_reference<Arg>::type).name();

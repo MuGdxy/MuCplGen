@@ -17,12 +17,13 @@ namespace MuCplGen
 		{
 			if (!*str)
 				return 0;
-			register size_t hash = 5381;
+			size_t hash = 5381;
 			while (size_t ch = (size_t)*str++)
 			{
 				hash += (hash << 5) + ch;
 				return hash;
 			}
+			return 0;
 		}
 		
 		void Type(const std::string& type)

@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <any>
 #include "Platform.h"
+#include "FileSystem.h"
 #include "PushDownAutomaton.h"
 #include "Token.h"
 #include "DebugTool/DebugOption.h"
@@ -188,22 +189,29 @@ namespace MuCplGen
 
 		virtual void Save(const std::string& path)
 		{
+			FileSystem::path p(path);
+			auto dir = p.parent_path();
+			if(!FileSystem::exists(dir)) FileSystem::create_directory(dir);
 			std::ofstream o(path, std::ios::binary);
 			o << action_table << goto_table;
 		}
 
 		virtual bool Load(const std::string& path)
 		{
-			auto error = false;
-			try
+			auto error = true;
+			if(FileSystem::exists(path))
 			{
-				std::ifstream i(path, std::ios::binary);
-				i >> action_table >> goto_table;
-			}
-			catch (std::exception e)
-			{
-				error = true;
-			}
+				try
+				{
+					std::ifstream i(path, std::ios::binary);
+					i >> action_table >> goto_table;
+					error = false;
+				}
+				catch (std::exception e)
+				{
+					error = true;
+				}
+			}			
 			return !error;
 		}
 	};

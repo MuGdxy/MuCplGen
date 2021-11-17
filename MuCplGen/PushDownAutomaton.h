@@ -24,14 +24,14 @@ template <typename T>
 class PushDownAutomaton
 {
 public:
-	// A -> ¦Á
+	// A -> ï¿½ï¿½
 	using Production = std::vector<T>;
 
-	// A -> ¦Á0|¦Á1|...
+	// A -> ï¿½ï¿½0|ï¿½ï¿½1|...
 	using Productions = std::vector<Production>;
 
-	// A -> ¦Á0|¦Á1|...
-	// B -> ¦Â0|¦Â2|...
+	// A -> ï¿½ï¿½0|ï¿½ï¿½1|...
+	// B -> ï¿½ï¿½0|ï¿½ï¿½2|...
 	// ...
 	using ProductionTable = std::vector<Productions>;
 
@@ -41,13 +41,13 @@ public:
 	using FirstTable = std::vector<std::set<T>>;
 	using FollowTable = std::vector<std::set<T>>;
 
-	// SELECT(A -> ¦Á) = {a1,a2,...}
+	// SELECT(A -> ï¿½ï¿½) = {a1,a2,...}
 	// Select_Table[nonterm][production] => set of term;
 	using SelectTable = std::vector<std::map<Production&, std::set<T>>>;
 
 	//	|nt/t	|a		|b		|c		|
-	//	|A		|A->¦Á	|none	|none	|
-	//	|B		|none	|none	|B->¦Â	|
+	//	|A		|A->ï¿½ï¿½	|none	|none	|
+	//	|B		|none	|none	|B->ï¿½ï¿½	|
 	//  |...	|		|		|		|
 	using LL1Table = std::vector<std::vector<Production>>;
 
@@ -58,7 +58,7 @@ public:
 		T sym;
 		// to get certain production
 		int production_index;
-		// A->¦Á.B¦Â
+		// A->ï¿½ï¿½.Bï¿½ï¿½
 		int point_pos;
 		bool operator == (const Item& obj) const
 		{
@@ -121,7 +121,7 @@ public:
 		T nonterm;
 		// to get certain production
 		size_t production_index;
-		// A->¦Á.B¦Â
+		// A->ï¿½ï¿½.Bï¿½ï¿½
 		size_t point_pos;
 
 		T LAterm;
@@ -178,29 +178,21 @@ public:
 	};
 
 private:
-	template<class T>
-	static std::ostream& Save(std::ostream& o, T& t)
+	template<class Ty>
+	static std::ostream& Save(std::ostream& o, Ty& t)
 	{
 		size_t pos = o.tellp();
-		if (pos == (size_t)-1)
-		{
-			auto a = 1;
-		}
-		o.write((char*)&t, sizeof(T));
-		o.seekp(pos + sizeof(T));
+		o.write((char*)&t, sizeof(Ty));
+		o.seekp(pos + sizeof(Ty));
 		return o;
 	}
 
-	template<class T>
-	static std::istream& Load(std::istream& i, T& t)
+	template<class Ty>
+	static std::istream& Load(std::istream& i, Ty& t)
 	{
 		size_t pos = i.tellg();
-		if (pos == (size_t)-1)
-		{
-			auto a = 1;
-		}
-		i.read((char*)&t, sizeof(T));
-		i.seekg(pos + sizeof(T));
+		i.read((char*)&t, sizeof(Ty));
+		i.seekg(pos + sizeof(Ty));
 		return i;
 	}
 public:
@@ -429,8 +421,8 @@ private:
 		const ProductionTable& production_table,
 		const T epsilon, const T Sym);
 
-	// for certain A -> ¦ÁB¦Â
-	// beta_start_index>=length of production X->¦ÁB¦Â,means X -> ¦ÁB
+	// for certain A -> ï¿½ï¿½Bï¿½ï¿½
+	// beta_start_index>=length of production X->ï¿½ï¿½Bï¿½ï¿½,means X -> ï¿½ï¿½B
 	static void set_follow_of_X_with_certain_beta(
 		bool& changed,
 		const FirstTable& first_table,
@@ -524,9 +516,9 @@ typename PushDownAutomaton<T>::LL1Table PushDownAutomaton<T>::Preanalysis(
 		for (const auto& production : production_table[sym])
 		{
 			bool has_epsilon = false;
-			//A -> ¦Á
-			//¦Á -> Y1Y2...Yk
-			//FIRST(¦Á)
+			//A -> ï¿½ï¿½
+			//ï¿½ï¿½ -> Y1Y2...Yk
+			//FIRST(ï¿½ï¿½)
 			for (size_t sym_index = 0; sym_index < production.size(); ++sym_index)
 			{
 				//for every symbol Yj
@@ -547,7 +539,7 @@ typename PushDownAutomaton<T>::LL1Table PushDownAutomaton<T>::Preanalysis(
 				if (!has_epsilon)
 					break;
 			}
-			//if ¦Å belongs to FIRST(¦Á)
+			//if ï¿½ï¿½ belongs to FIRST(ï¿½ï¿½)
 			if (has_epsilon)
 				for (auto term : follow_table[sym])
 				{
@@ -571,14 +563,14 @@ typename PushDownAutomaton<T>::SimplifiedSetOfItems PushDownAutomaton<T>::CLOSUR
 		// for every core_item
 		const auto& production =
 			production_table[core_item.sym][core_item.production_index];
-		// if A -> ¦Á.a¦Â, discard.
+		// if A -> ï¿½ï¿½.aï¿½ï¿½, discard.
 		if (core_item.point_pos >= production.size()
 			|| production[core_item.point_pos] >= epsilon)
 			continue;
 		// else:
-		// A->¦Á.B¦Â
+		// A->ï¿½ï¿½.Bï¿½ï¿½
 		auto B = production[core_item.point_pos];
-		// B->¦Ã
+		// B->ï¿½ï¿½
 		ret.non_cores[B] = true;
 	}
 
@@ -586,11 +578,11 @@ typename PushDownAutomaton<T>::SimplifiedSetOfItems PushDownAutomaton<T>::CLOSUR
 	while (changed)
 	{
 		changed = false;
-		// A->¦Á.B¦Â
+		// A->ï¿½ï¿½.Bï¿½ï¿½
 		for (size_t B = 0; B < ret.non_cores.size(); ++B)
 			if (ret.non_cores[B])// if has CLOSURE(B)
 				for (const auto& production : production_table[B])
-					if (//if B-> C¦Ã, where C is nonterm (e.g. E -> T)
+					if (//if B-> Cï¿½ï¿½, where C is nonterm (e.g. E -> T)
 						production[0] < (int)epsilon
 						//And doesn't contain CLOSURE(C)
 						&& !ret.non_cores[production[0]])
@@ -619,15 +611,15 @@ void PushDownAutomaton<T>::CLOSURE(
 			//if A -> X .
 			if (I[i].point_pos >= pro_length) continue;
 
-			// else: A -> ¦Á.B¦Â
+			// else: A -> ï¿½ï¿½.Bï¿½ï¿½
 			auto B = production_table[I[i].nonterm][I[i].production_index][I[i].point_pos];
 			if (B < epsilon)
 			{
 				for (size_t B_pro_index = 0; B_pro_index < production_table[B].size(); ++B_pro_index)
-					// for each [B->¦Ã]
+					// for each [B->ï¿½ï¿½]
 				{
-					// Get First(¦Âa)
-					// if ¦Â = ¦Å,First(¦Âa) = a, put [B->.¦Ã,a]
+					// Get First(ï¿½ï¿½a)
+					// if ï¿½ï¿½ = ï¿½ï¿½,First(ï¿½ï¿½a) = a, put [B->.ï¿½ï¿½,a]
 					if (I[i].point_pos + 1 >= pro_length)
 					{
 						auto contain = false;
@@ -645,9 +637,9 @@ void PushDownAutomaton<T>::CLOSURE(
 							changed = true;
 						}
 					}
-					else // ¦Â != ¦Å
+					else // ï¿½ï¿½ != ï¿½ï¿½
 					{
-						// for every sym in ¦Â
+						// for every sym in ï¿½ï¿½
 						for (size_t iter = I[i].point_pos + 1;
 							iter < production_table[I[i].nonterm][I[i].production_index].size();
 							++iter)
@@ -696,7 +688,7 @@ void PushDownAutomaton<T>::CLOSURE(
 									}
 								}
 
-								// if first(¦Â) has epsilon
+								// if first(ï¿½ï¿½) has epsilon
 								if (has_epsilon)
 								{
 									auto contain = false;
@@ -720,13 +712,13 @@ void PushDownAutomaton<T>::CLOSURE(
 
 				}
 			}
-			// [A->¦Á.B¦Â,a]
+			// [A->ï¿½ï¿½.Bï¿½ï¿½,a]
 			for (size_t nonterm = 0; nonterm < production_table.size(); ++nonterm)
 				for (size_t pro_index = 0; pro_index < production_table[nonterm].size(); ++pro_index)
 				{
 					auto pro_length = production_table[nonterm][pro_index].size();
 					if (I[i].point_pos >= pro_length)
-						// [A->¦Á.,a]
+						// [A->ï¿½ï¿½.,a]
 						continue;
 					if (B < epsilon)
 						// if B is nonterm
@@ -754,7 +746,7 @@ typename PushDownAutomaton<T>::SimplifiedSetOfItems PushDownAutomaton<T>::GOTO(
 		if (core_item.point_pos < production.size()
 			// e.g. E->E.+T symbol = +
 			&& production[core_item.point_pos] == symbol
-			// e.g A->.¦Å
+			// e.g A->.ï¿½ï¿½
 			&& symbol != epsilon)
 		{
 			//e.g.  insert E->E+.T
@@ -770,7 +762,7 @@ typename PushDownAutomaton<T>::SimplifiedSetOfItems PushDownAutomaton<T>::GOTO(
 			for (int production_index = 0;
 				production_index < production_table[sym].size();
 				++production_index)
-				if (// e.g. E->.T  A->.¦Å
+				if (// e.g. E->.T  A->.ï¿½ï¿½
 					production_table[sym][production_index][0] == symbol)
 				{
 					// e.g.  insert E->T.
@@ -792,7 +784,7 @@ std::vector<typename PushDownAutomaton<T>::LR1Item> PushDownAutomaton<T>::GOTO(c
 		const auto& production =
 			production_table[item.nonterm][item.production_index];
 		if (item.point_pos < production.size()
-			// e.g. E->E.+T symbol = + A->.¦Å
+			// e.g. E->E.+T symbol = + A->.ï¿½ï¿½
 			&& production[item.point_pos] == symbol)
 		{
 			J.push_back({ item.nonterm ,item.production_index,item.point_pos + 1,item.LAterm });
@@ -951,7 +943,7 @@ typename PushDownAutomaton<T>::ActionTable PushDownAutomaton<T>::SetActionTable(
 		auto aim_state = std::get<1>(item);
 		// every certain goto in goto_table
 		if (int_sym > int_epsilon && int_sym < int_end)
-			// if the state is A->¦Á.a¦Â, a is a term
+			// if the state is A->ï¿½ï¿½.aï¿½ï¿½, a is a term
 		{
 			// then ACTION[i,a] = move in a
 			Action a;
@@ -996,7 +988,7 @@ typename PushDownAutomaton<T>::ActionTable PushDownAutomaton<T>::SetActionTable(
 		{
 			auto production_length = production_table[item.nonterm][item.production_index].size();
 			if (item.point_pos >= production_length)
-				// if the state is A->¦Á.
+				// if the state is A->ï¿½ï¿½.
 			{
 				if (item.nonterm == start)
 					// if S'-> S.
@@ -1012,8 +1004,8 @@ typename PushDownAutomaton<T>::ActionTable PushDownAutomaton<T>::SetActionTable(
 				}
 				else
 				{
-					// [A->¦Á.,a]
-					// ACTION[i,a] = reduce A->¦Á
+					// [A->ï¿½ï¿½.,a]
+					// ACTION[i,a] = reduce A->ï¿½ï¿½
 					Action a;
 					a.type = ActionType::reduce;
 					// also record the head of the production
@@ -1051,7 +1043,7 @@ typename PushDownAutomaton<T>::ActionTable PushDownAutomaton<T>::SetActionTable(
 		auto aim_state = std::get<1>(item);
 		// every certain goto in goto_table
 		if (int_sym > int_epsilon && int_sym < int_end)
-			// if the state is A->¦Á.a¦Â, a is a term
+			// if the state is A->ï¿½ï¿½.aï¿½ï¿½, a is a term
 		{
 			// then ACTION[i,a] = move in a
 			Action a;
@@ -1099,7 +1091,7 @@ typename PushDownAutomaton<T>::ActionTable PushDownAutomaton<T>::SetActionTable(
 			// every certain core
 			auto production_length = production_table[(int)core.sym][core.production_index].size();
 			if (core.point_pos >= production_length)
-				// if the state is A->¦Á.
+				// if the state is A->ï¿½ï¿½.
 			{
 				if (core.sym == start)
 					// if S'-> S.
@@ -1117,7 +1109,7 @@ typename PushDownAutomaton<T>::ActionTable PushDownAutomaton<T>::SetActionTable(
 					for (const auto& term : follow_table[(int)core.sym])
 					{
 						// then for every term a, in FOLLOW(A)
-						// ACTION[i,a] = reduce A->¦Á
+						// ACTION[i,a] = reduce A->ï¿½ï¿½
 						Action a;
 						a.type = ActionType::reduce;
 						// also record the head of the production
@@ -1209,7 +1201,7 @@ void PushDownAutomaton<T>::set_follow_of_X_with_certain_beta(
 	if (int_sym_B >= (int)epsilon)
 		return;
 
-	// if A -> ¦ÁB
+	// if A -> ï¿½ï¿½B
 	// then all FOLLOW(A) belongs to FOLLOW(B)
 	if (beta_start_index >= production_table[int_sym_A][production_index].size())
 	{
@@ -1223,11 +1215,11 @@ void PushDownAutomaton<T>::set_follow_of_X_with_certain_beta(
 		return;
 	}
 
-	// A -> ¦ÁB¦Â		
-	// all FIRST(¦Â) (excepts ¦Å) belongs to FIRST(B)
+	// A -> ï¿½ï¿½Bï¿½ï¿½		
+	// all FIRST(ï¿½ï¿½) (excepts ï¿½ï¿½) belongs to FIRST(B)
 	bool has_epsilon = false;
 	const size_t length_of_production = production_table[int_sym_A][production_index].size();
-	// ¦Â = X1X2...Xm
+	// ï¿½ï¿½ = X1X2...Xm
 	for (size_t index_in_beta = beta_start_index; index_in_beta < length_of_production; ++index_in_beta)
 	{
 		// for certain Xi
@@ -1247,8 +1239,8 @@ void PushDownAutomaton<T>::set_follow_of_X_with_certain_beta(
 			break;
 	}
 
-	// X -> ¦ÁB¦Â	
-	// if FIRST(¦Â) has ¦Å
+	// X -> ï¿½ï¿½Bï¿½ï¿½	
+	// if FIRST(ï¿½ï¿½) has ï¿½ï¿½
 	// then all FOLLOW(A) belongs to FOLLOW(B)
 	if (has_epsilon)
 	{
