@@ -10,7 +10,7 @@ class ILGenerator :public SyntaxDirected<SLRParser<EasyToken, size_t>>
 public:
 	ILGenerator(std::ostream& log = std::cout) :SyntaxDirected(log)
 	{
-		debug_option = Debug::DebugOption::AllDebugInfo;
+		debug_option = Debug::DebugOption::ConciseInfo;
 		generation_option = GenerationOption::LoadAndSave;
 		SetStorage("./storage/ILGen.bin");
 		//bTy->keyword && "float";
@@ -916,9 +916,6 @@ public:
 			p.expression = "Num -> num";
 			p.SetAction<Token*, Empty>(get_token);
 		}
-
-
-		Initialize();
 	}
 	void ShowTables()
 	{
@@ -938,7 +935,7 @@ public:
 	{
 		if (error_info_pair.size())
 		{
-			Debug::Highlight(*input_text, *this->token_set, error_info_pair);
+			Debug::Highlight(GetInputText(), GetTokenSet(), error_info_pair);
 			return true;
 		}
 		return false;

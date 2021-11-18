@@ -89,6 +89,7 @@ namespace MuCplGen
 				throw(std::logic_error("TokenToTerminator Failed"));
 			else return sym;
 		}
+		
 		MU_NOINLINE
 		std::any* SemanticActionDispatcher(std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)
 		{
@@ -114,6 +115,7 @@ namespace MuCplGen
 				else return rule->semantic_action(input);
 			}
 		}
+		
 		MU_NOINLINE
 		void ErrorReductionActionDispatcher(std::vector<Sym> expects, size_t token_iter)
 		{
@@ -139,6 +141,7 @@ namespace MuCplGen
 			}
 			else error_action(std::move(expects), token_iter);
 		}
+		
 		std::string ScopedName(const std::string& scope, const std::string& name)
 		{
 			if (scope.empty()) return name;
@@ -237,10 +240,24 @@ namespace MuCplGen
 		}
 
 		size_t token_iter = 0;
-
+		TokenSet* token_set;
+		std::vector<LineContent>* input_text = nullptr;
 		std::string storage = "";
 	public:
 		SyntaxDirected(std::ostream& log = std::cout): log(log) {}
+		
+		MU_NOINLINE
+		void Build()
+		{
+			SetupSymbols();
+			if ((int)generation_option & (int)GenerationOption::Load && !Load(storage))
+			{
+				my_parser.SetUp(production_table, end - 1, end, epsilon, start);
+				if ((int)generation_option & (int)GenerationOption::Save) Save(storage);
+			}
+			else my_parser.Reset();
+			my_parser.debug_option = debug_option;
+		}
 
 		void Save(const std::string& path) { my_parser.Save(path); }
 
@@ -248,14 +265,10 @@ namespace MuCplGen
 
 		bool Parse(std::vector<LineContent>& input_text, TokenSet& token_set)
 		{
-			SetInput(input_text);
-			return Parse(token_set);
-		}
-
-		bool Parse(TokenSet& token_set)
-		{
-			my_parser.Reset();
+			this->input_text = &input_text;
 			this->token_set = &token_set;
+			if (!production_table.size()) Build();
+			else my_parser.Reset();
 			return my_parser.Parse(token_set,
 				[this](const Token& token) {return TokenToTerminator(token); },
 				[this](std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)
@@ -268,21 +281,21 @@ namespace MuCplGen
 				}, log);
 		}
 
-		void SetInput(std::vector<LineContent>& input_text)
-		{
-			this->input_text = &input_text;
-		}
+		TokenSet& GetTokenSet() { return *token_set; }
+
+		size_t TokenIter() { return token_iter; }
+
+		Token& CurrentToken() { return (*token_set)[token_iter]; }
+
+		std::vector<LineContent>& GetInputText() { return *input_text; }
 
 		~SyntaxDirected()
 		{
 			for (auto rule : parse_rules) delete rule;
 			for (auto rule : terminator_rules) delete rule;
 		}
-		TokenSet* token_set;
 #pragma region For Custom Code 
 	protected:
-		std::vector<LineContent>* input_text = nullptr;
-		
 		GenerationOption generation_option = GenerationOption::Runtime;
 
 		void SetStorage(const std::string& storage) { this->storage = storage; }
@@ -329,30 +342,6 @@ namespace MuCplGen
 			}
 			return -1;
 		}
-
-		void Initialize()
-		{
-			SetupSymbols();
-			if ((int)generation_option & (int)GenerationOption::Load && !Load(storage))
-			{
-				my_parser.SetUp(production_table, end - 1, end, epsilon, start);
-				if ((int)generation_option & (int)GenerationOption::Save) Save(storage);
-			}
-			else my_parser.Reset();
-			my_parser.debug_option = debug_option;
-		}
-		
-		template<class T>
-		T& Get(std::any* a) { return std::any_cast<T&>(*a); }
-
-		TokenSet& GetTokenSet() { return *token_set; }
-
-		size_t TokenIter() { return token_iter; }
-
-		Token& CurrentToken() { return (*token_set)[token_iter]; }
-
-		const std::vector<LineContent>& InputText() { return *input_text; }
-
 		size_t debug_option = 0;
 #pragma endregion
 	};

@@ -83,7 +83,7 @@ namespace MuCplGen
 					break;
 				}
 				T input_term = transfer_func(token_set[iter]);
-				if (state_stack.size() == 0) throw Exception("Check if you call Initialize() in your constructor.");
+				if (state_stack.size() == 0) throw Exception("Check if you call Build() in your constructor.");
 				auto action_iter = action_table.find({ state_stack.top(),input_term });
 				if (action_table.find({ state_stack.top(),input_term }) != action_table.end())
 				{
