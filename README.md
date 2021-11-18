@@ -12,10 +12,7 @@
     	</td>
     </tr>
 </table>
----
-
-
-![image-20211117012404591](README.assets/image-20211117012404591.png)
+![image-20211118132158712](README.assets/image-20211118132158712.png)
 
 ## Introduction
 
@@ -276,6 +273,56 @@ Context Free Grammar (CFG) based.
 | SLR        | `SLRParser<UserToken,T>` | :heavy_check_mark: |
 | LR1        | `LR1Parser<UserToken,T>` | :heavy_check_mark: |
 | BaseParser |                          | :x:                |
+
+### Store Tables
+
+It consumes substantial time to build a **PDA** from **CFG**, when the amount of states grows more than 3k. So **MuCplGen** provides a mechanism to store the build result in binary form. It's up to you whether to save or load a build result. (Sometimes IO is slower than directly build a **PDA** ) .
+
+this is the first time to build a **PDA**，which takes 69ms.
+
+![image-20211118132824549](README.assets/image-20211118132824549.png)
+
+while, the second time, we just load the build result form the disk, which takes only 2ms. We actually solve the most time consuming part. The total time falls as fast as 1/10.
+
+![image-20211118132910802](README.assets/image-20211118132910802.png)
+
+To control the save & load strategy.
+
+```cpp
+enum class BuildOption
+{
+    Runtime = 0,
+    Save = 1,
+    Load = 1 << 1,
+    LoadAndSave = Load | Save
+};
+
+//custom code:
+struct CustomToken
+{
+    ...
+}
+
+class CustomParser :public SyntaxDirected<SLRParser<CustomToken, size_t>>
+{
+public:
+	CustomParser(std::ostream& log = std::cout) :SyntaxDirected(log)
+	{
+		generation_option = BuildOption::LoadAndSave;
+		SetStorage("./storage/ILGen.bin");
+        ...
+    }
+}
+```
+
+| enum        | description                                        |
+| ----------- | -------------------------------------------------- |
+| Runtime     | never load and save, always build a **PDA**        |
+| Save        | always save the build result after build a **PDA** |
+| Load        | always load the build result from the disk         |
+| LoadAndSave | asways load and save.                              |
+
+if load fails, the **Parser** roll back to the runtime mode, rebuild the **PDA** from your **CFG**.
 
 # Appendix
 

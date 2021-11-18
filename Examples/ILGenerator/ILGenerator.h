@@ -11,7 +11,7 @@ public:
 	ILGenerator(std::ostream& log = std::cout) :SyntaxDirected(log)
 	{
 		debug_option = Debug::DebugOption::ConciseInfo;
-		generation_option = GenerationOption::LoadAndSave;
+		generation_option = BuildOption::LoadAndSave;
 		SetStorage("./storage/ILGen.bin");
 		//bTy->keyword && "float";
 		//bTy->keyword && "char";

@@ -18,7 +18,7 @@
 namespace MuCplGen
 {
 	using namespace MuCplGen::Debug;
-	enum class GenerationOption
+	enum class BuildOption
 	{
 		Runtime = 0,
 		Save = 1,
@@ -250,10 +250,10 @@ namespace MuCplGen
 		void Build()
 		{
 			SetupSymbols();
-			if ((int)generation_option & (int)GenerationOption::Load && !Load(storage))
+			if ((int)generation_option & (int)BuildOption::Load && !Load(storage))
 			{
 				my_parser.SetUp(production_table, end - 1, end, epsilon, start);
-				if ((int)generation_option & (int)GenerationOption::Save) Save(storage);
+				if ((int)generation_option & (int)BuildOption::Save) Save(storage);
 			}
 			else my_parser.Reset();
 			my_parser.debug_option = debug_option;
@@ -296,7 +296,7 @@ namespace MuCplGen
 		}
 #pragma region For Custom Code 
 	protected:
-		GenerationOption generation_option = GenerationOption::Runtime;
+		BuildOption generation_option = BuildOption::Runtime;
 
 		void SetStorage(const std::string& storage) { this->storage = storage; }
 
