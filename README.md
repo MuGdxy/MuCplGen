@@ -17,6 +17,14 @@
 
 ![image-20211117012404591](README.assets/image-20211117012404591.png)
 
+## Requirement
+
+| Platform | Requirement |
+| -------- | ----------- |
+| Windows  | c++17       |
+| Linux    | c++ 17 g++8 |
+|          |             |
+
 ## Scanner
 
 Regular Expression (Regex) based.
