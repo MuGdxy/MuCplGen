@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 3.1)
 project(MuCplGen)
 set(CMAKE_CXX_STANDARD 17)
 
+message("build type = ${CMAKE_BUILD_TYPE}")
+option(Examples "Build Examples" on)
+option(Debug on)
+if(Debug)
+    set(CMAKE_BUILD_TYPE "Debug")
+else()
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+message("build type = ${CMAKE_BUILD_TYPE}")
 set(gpp off)
 message("System=${CMAKE_SYSTEM_NAME}")
 message("Compiler=${CMAKE_CXX_COMPILER_ID}")
@@ -12,8 +21,6 @@ endif()
 set(CMAKE_CXX_FLAGS "--std=c++17 -lstdc++fs")
 
 set(CMAKE_CXX_STANDARD_REQUIRED true)
-
-option(Examples "Build Examples" on)
 
 if(Examples)
     add_executable(ILGenerator
