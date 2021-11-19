@@ -12,10 +12,14 @@
     	</td>
     </tr>
 </table>
----
 
 
 ![image-20211117012404591](README.assets/image-20211117012404591.png)
+
+[frequent-update-repo](https://revdolgaming.coding.net/public/musys/MuCompilerGenerator/git/files).
+```shell
+git clone https://e.coding.net/revdolgaming/musys/MuCompilerGenerator.git
+```
 
 ## Introduction
 
