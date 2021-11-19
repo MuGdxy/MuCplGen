@@ -60,6 +60,67 @@ if you are Linux user, make sure that you g++8 is available. [linux install g++8
 
 In this part we are going to create an easy calculator from scratch, covering using predefined  `EasyScanner`,  implementing a **Parser** and defining its rules.
 
+### Read from Console
+
+Create `main.cpp` in your project. Include `MuCplGen/MuCplGen.h`.
+
+```cpp
+//main.cpp
+#include <MuCplGen/MuCplGen.h>
+using namespace MuCplGen;
+
+int main()
+{
+	LineContent line;
+	line.line_no = 1;
+	std::cin >> line.content;
+}
+```
+
+For convinience, this time, we read the console as input.
+
+### Recognize Number & Operator
+
+`EasyScanner` is a predefined Scanner, which can recognize:
+
+- number
+- arithmatic operator
+- relation operator
+- ...
+
+we just ask `EasyScanner` to recoginze number and arithmatic operator for us.
+
+```cpp
+int main()
+{
+    ...
+    EasyScanner easyScanner;
+	std::vector<EasyToken> tokens = easyScanner.Scann({ line });
+}
+```
+
+after scanning, `EasyScanner` returns a list of tokens to us, which will be the input of our Parser.
+
+### Analyse Expression
+
+To define our Parser, we need some rules, which is called **CFG**.
+
+An arithmatic expression can be defined as follows:
+$$
+\begin{align}
+E\_& \rarr E\\
+E&\rarr T\\
+E& \rarr T \ + \ E\\
+E& \rarr T \ - \ E\\
+T& \rarr F \ * \ T\\
+T& \rarr F \ / \ T\\
+T& \rarr F\\
+F&\rarr (\ E\ )\\		
+F&\rarr	- E\\							
+F&\rarr E\\
+F&\rarr Number
+\end{align}
+$$
 [TODO]
 
 ## Scanner
