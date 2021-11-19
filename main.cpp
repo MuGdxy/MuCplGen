@@ -49,10 +49,10 @@ struct MyTestParser : SyntaxDirected<LR1Parser<EasyToken,size_t>>
 		p0.SetSemanticErrorAction(
 			[this](std::vector<std::any*> data)->std::any*
 			{
-				if (HasSemanticError(data)) std::cout << "GET Semantic Error";
-				int i = NextSemanticError(data);
-				int a = Get<int>(data[0]);
-				return data[i];
+				auto next = -1;
+				auto parser_error = NextSemanticError(data, next);
+				auto& a = GetErrorData<int>(parser_error);
+				return data[next];
 			});
 		debug_option = Debug::DebugOption::AllDebugInfo;
 		Initialize();

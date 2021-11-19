@@ -522,6 +522,13 @@ public:
 			p.SetAction<Token*, Empty>(get_token);
 		}
 
+		auto error_action = [this](const std::vector<std::any*>& data)
+		{
+			int next = -1;
+			NextSemanticError(data, next);
+			return PassOn(next);
+		};
+
 		//_Assignment:
 		ParseRule::SetCurrentScope("_Assignment");
 		//	Asgn -> LVal = Expr ; {assign};
@@ -535,11 +542,7 @@ public:
 					Env.ILCodeStream.push_back({ laddr, "", raddr, nullptr });
 					return Empty{};
 				});
-			p.SetSemanticErrorAction([this](std::vector<std::any*> data)
-				{
-					auto index = NextSemanticError(data);
-					return data[index];
-				});
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	Expr -> BTpl || BTpl
 		{
@@ -583,12 +586,6 @@ public:
 			p.expression = "BFn -> RVal";
 		}
 
-		auto error_action = [this](std::vector<std::any*> data)
-		{
-			auto index = NextSemanticError(data);
-			return data[index];
-		};
-
 		//	RVal -> RVal + Tpl {do_add};
 		{
 			auto& p = CreateParseRule();
@@ -601,7 +598,7 @@ public:
 					Env.ILCodeStream.push_back({ new_addr,"ADD",rval,tpl });
 					return new_addr;
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	RVal -> RVal - Tpl {do_sub};
 		{
@@ -615,7 +612,7 @@ public:
 					Env.ILCodeStream.push_back({ new_addr,"SUB",rval,tpl });
 					return new_addr;
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	RVal -> Tpl {passon_0};
 		{
@@ -634,7 +631,7 @@ public:
 					Env.ILCodeStream.push_back({ new_addr,"MUL",rval,tpl });
 					return new_addr;
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	Tpl -> Tpl / Fn; {do_div};
 		{
@@ -648,7 +645,7 @@ public:
 					Env.ILCodeStream.push_back({ new_addr,"DIV",rval,tpl });
 					return new_addr;
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 			
 		}
 		//	Tpl -> Fn {passon_0}
@@ -674,7 +671,7 @@ public:
 					Env.ILCodeStream.push_back({ new_addr,"-", addr, nullptr });
 					return new_addr;
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	Fn -> Val {passon_0}
 		{
@@ -700,7 +697,7 @@ public:
 					addr->token = token;
 					return addr;
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 
 		// struct
@@ -715,7 +712,7 @@ public:
 					Env.PopEntry();
 					return PassOn(1);
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	M0 -> epsilon; {start_lVal};//push Env.top;set Env.top as var_head;
 		{
@@ -729,7 +726,7 @@ public:
 					Env.top = Env.var_head;
 					return Empty{};
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 
 		//	LValCmp -> LValCmp . LValMem {filling_addr};//connect LValMem<Address>.chain[0] to LValCmp<Address>.chain;
@@ -746,7 +743,7 @@ public:
 					Env.top = LValMem->chain[0];
 					return PassOn(0);
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	LValCmp -> LValMem {start_Cmp};// set LValMem<Address>.lastEntry.tableptr to Env.top; return LValMem<Address>;
 		{
@@ -759,7 +756,7 @@ public:
 					Env.top = addr->chain[addr->chain.size() - 1];
 					return addr;
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	// baseType
 		//	LValMem -> MemId {create_id_addr};//check MemId<Token>.name in table;create addr;return addr
@@ -788,7 +785,7 @@ public:
 					error_info_pair.push_back({ TokenIter(), ss.str() });
 					throw(SemanticError());
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	MemId -> Id {passon_0};//passon_0
 		{
@@ -814,7 +811,7 @@ public:
 					addr_stack.pop();
 					return PassOn(1);
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	ArrId -> Id {create_array_dimension};//check Id<Token>.name in Env.top;create addr;push Env.top;set entry.tableptr to Env.top; return addr;
 		{
@@ -840,7 +837,7 @@ public:
 					error_info_pair.push_back({ TokenIter(),"ERROR: undefined " + token->name });
 					throw(SemanticError());
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	Arr -> Arr Cmp {process_offset};//create addr for [t_mul,t_offset], Generator Code: "t_mul = Addr1 * (ArrayInfo[dimension-1])","t_offset = t_mul + Addr2"; return t_offset;
 		{
@@ -868,7 +865,7 @@ public:
 					Env.ILCodeStream.push_back({ temp_offset, "ADD", temp_mul, addr2 });
 					return temp_offset;
 				});
-			p.SetSemanticErrorAction(error_action);
+			p.SetSemanticErrorAction<PassOn>(error_action);
 		}
 		//	Arr -> Cmp {passon_0};
 		{

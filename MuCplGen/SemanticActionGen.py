@@ -37,7 +37,7 @@ void SetAction(std::function<Ret($$FUNC_ARGS$$)> action)
             se = e;
         }
         if (!error) return RecordRet(ret, data);
-        else return RecordRet(se.error_code, data);
+        else return RecordRet(se.error_data, data);
     };
 }
 '''

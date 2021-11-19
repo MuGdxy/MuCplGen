@@ -95,8 +95,9 @@ namespace MuCplGen
 		{
 			auto rule = quick_parse_rule_table[nonterm][pro_index];
 			this->token_iter = token_iter;
-			auto error_pos = NextSemanticError(input);
-			if (error_pos != -1)
+			auto error_pos = -1;
+			auto error_data = NextSemanticError(input,error_pos);
+			if (error_data)
 			{
 				if (debug_option & DebugOption::ShowReductionProcess)
 				{
@@ -326,32 +327,35 @@ namespace MuCplGen
 
 		bool HasSemanticError(std::vector<std::any*> input)
 		{
-			return NextSemanticError(input) >= 0;
+			auto next = -1;
+			return NextSemanticError(input, next);
 		}
 
 		MU_NOINLINE
-		int NextSemanticError(std::vector<std::any*> input, int last = -1)
+		ParserErrorData* NextSemanticError(std::vector<std::any*> input, int& next)
 		{
-			auto first = last + 1;
+			auto first = next + 1;
 			auto size = input.size();
 			for (int i = first; i < size; ++i)
 			{
 				if (input[i] == nullptr) continue;
-				if (auto p = std::any_cast<ParserErrorCode>(input[i]))
-					if (*p == ParserErrorCode::SemanticError) return i;
+				if (auto p = std::any_cast<ParserErrorData>(input[i]))
+					if (p && p->code == ParserErrorCode::SemanticError)
+					{
+						next = i;
+						return p;
+					}
 			}
-			return -1;
+			next = -1;
+			return nullptr;
+		}
+
+		template<class T>
+		T GetErrorData(ParserErrorData* error)
+		{
+			return std::any_cast<T&>(error->data);
 		}
 		size_t debug_option = 0;
 #pragma endregion
 	};
-
-	class TestCompiler :public SyntaxDirected<SLRParser<size_t>>
-	{
-	public:
-		TestCompiler(std::ostream& log) :SyntaxDirected(log)
-		{
-
-		}
-	};	
 }

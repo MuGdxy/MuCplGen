@@ -20,6 +20,12 @@ namespace MuCplGen
 		SemanticError = 2
 	};
 
+	struct ParserErrorData
+	{
+		ParserErrorCode code = ParserErrorCode::SemanticError;
+		std::any data;
+	};
+
 	template<class UserToken, typename T = size_t>
 	class BaseParser
 	{
@@ -115,9 +121,9 @@ namespace MuCplGen
 							<< "\tpop amount: " << action.production_length
 							<< " push state: " << goto_state << std::endl;
 						auto back = semantic_action(std::move(pass), (size_t)action.sym, action.production_index, top_token_iter);
-						if (auto cast = std::any_cast<ParserErrorCode>(back))
+						if (auto cast = std::any_cast<ParserErrorData>(back))
 						{
-							switch (*cast)
+							switch (cast->code)
 							{
 							case ParserErrorCode::Stop:
 								if (debug_option & DebugOption::ParserError)

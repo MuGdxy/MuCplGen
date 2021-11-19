@@ -1,10 +1,12 @@
 #pragma once
 #include <vector>
+#include <iostream>
 #include <string>
 #include <any>
 #include <functional>
 #include <stack>
 #include <type_traits>
+#include "Parser.h"
 #include "MuException.h"
 namespace MuCplGen
 {
@@ -19,8 +21,11 @@ namespace MuCplGen
     struct SemanticError : public Exception
     {
         SemanticError() : Exception("SemanticError") {};
-        SemanticError(ParserErrorCode code) :Exception("SemanticError"), error_code(code){}
-        ParserErrorCode error_code = ParserErrorCode::SemanticError;
+        SemanticError(ParserErrorCode code) :Exception("SemanticError")
+        {
+            error_data.code = code;
+        }
+        ParserErrorData error_data;
         virtual ~SemanticError() override {}
     };
 
@@ -53,7 +58,14 @@ namespace MuCplGen
         using SemanticAction = std::function<std::any* (std::vector<std::any*>)>;
     public:
         static void SetCurrentScope(const std::string& scope) { scoped_on = scope; }
-        void SetSemanticErrorAction(SemanticAction on_error) { semantic_error = on_error; }
+        template<class Ret>
+        void SetSemanticErrorAction(std::function<Ret(const std::vector<std::any*>&)> on_error)
+        {
+            semantic_error = [on_error, this](std::vector<std::any*> data)->std::any*
+            {
+                return RecordRet(on_error(data), data);
+            };
+        }
     private:
         static std::string scoped_on;
 
@@ -62,37 +74,49 @@ namespace MuCplGen
         {
             if (index >= data.size())
             {
-                throw(Exception("Out of data range, check your Semantic Action parameters!"));
+                std::stringstream ss;
+                ss << "Out of data range!"
+                    << "Parser Rule=" << this->action_name << std::endl
+                    << "Production=" << this->expression << std::endl
+                    << "Check your Semantic Action parameters!";
+                throw(Exception(ss.str()));
             }
             auto arg = data[index];
             if (arg == nullptr)
             {
                 //to fool the compiler
                 auto e = Empty{};
-                if (typeid(typename std::remove_reference<Arg>::type) == typeid(Empty)) 
+                if (typeid(typename std::remove_reference<Arg>::type) == typeid(Empty))
                     return *reinterpret_cast<typename std::remove_reference<Arg>::type*>(&e);
                 else
                 {
                     std::string name = typeid(typename std::remove_reference<Arg>::type).name();
-                    throw(Exception(
-                        "Unmatched Type!"
-                        "Type of income data is <Empty>,"
-                        "while your parameter is something else."
-                        "Check your Semantic Action parameters!"
-                    ));
+                    std::stringstream ss;
+                    ss << "Unmatched Type!"
+                        << "Parser Rule=" << this->action_name << std::endl
+                        << "Production=" << this->expression << std::endl
+                        <<"Type of income data is <Empty>, your parameter="<< name << std::endl
+                        << "Check your Semantic Action parameters!";
+                    throw(Exception(ss.str()));
                 }
             }
             else
             {
-                if(typeid(Arg)==data[index]->type()) return std::any_cast<Arg>(*data[index]);
+                if (typeid(Arg) == data[index]->type()) return std::any_cast<Arg>(*data[index]);
             }
             std::string your_parameter_type_name = typeid(Arg).name();
             std::string data_type_name = data[index]->type().name();
-            throw(Exception("Unmatched Type! Check your Semantic Action of this Parser Rule!"));
+            std::stringstream ss;
+            ss << "Unmatched Type! Check your Semantic Action of this Parser Rule!" << std::endl
+                << "Parser Rule=" << this->action_name << std::endl
+                << "Production=" << this->expression << std::endl
+                << "your para type=" << your_parameter_type_name
+                << " income data type=" << data_type_name;
+            throw(Exception(ss.str()));
         }
 
         template<class Ret>
-        std::any* RecordRet(Ret&& ret, std::vector<std::any*> data)
+        std::any* RecordRet(Ret&& ret, const std::vector<std::any*>& data)
         {
             if (std::is_null_pointer<Ret>::value) return nullptr;
             if (typeid(PassOn) == typeid(Ret)) return data[reinterpret_cast<PassOn*>(&ret)->index];
@@ -151,7 +175,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1>
@@ -175,7 +199,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2>
@@ -200,7 +224,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3>
@@ -226,7 +250,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4>
@@ -253,7 +277,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5>
@@ -281,7 +305,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6>
@@ -310,7 +334,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7>
@@ -340,7 +364,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8>
@@ -371,7 +395,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9>
@@ -403,7 +427,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10>
@@ -436,7 +460,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10, class Arg11>
@@ -470,7 +494,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10, class Arg11, class Arg12>
@@ -505,7 +529,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10, class Arg11, class Arg12, class Arg13>
@@ -541,7 +565,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10, class Arg11, class Arg12, class Arg13, class Arg14>
@@ -578,7 +602,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
         template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10, class Arg11, class Arg12, class Arg13, class Arg14, class Arg15>
@@ -616,7 +640,7 @@ namespace MuCplGen
                     se = e;
                 }
                 if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_code, data);
+                else return RecordRet(se.error_data, data);
             };
         }
 

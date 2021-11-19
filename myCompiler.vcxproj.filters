@@ -57,6 +57,7 @@
     <ClInclude Include="MuCplGen\Platform.h" />
     <ClInclude Include="MuCplGen\MuException.h" />
     <ClInclude Include="MuCplGen\DebugTool\StopWatch.h" />
+    <ClInclude Include="MuCplGen\FileSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="assignment_test.txt">
