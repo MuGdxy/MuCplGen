@@ -66,8 +66,6 @@ namespace MuCplGen
                 return RecordRet(on_error(data), data);
             };
         }
-    private:
-        static std::string scoped_on;
 
         template<class Arg>
         Arg GetArg(const std::vector<std::any*>& data, int index)
@@ -95,7 +93,7 @@ namespace MuCplGen
                     ss << "Unmatched Type!"
                         << "Parser Rule=" << this->action_name << std::endl
                         << "Production=" << this->expression << std::endl
-                        <<"Type of income data is <Empty>, your parameter="<< name << std::endl
+                        << "Type of income data is <Empty>, your parameter=" << name << std::endl
                         << "Check your Semantic Action parameters!";
                     throw(Exception(ss.str()));
                 }
@@ -114,6 +112,8 @@ namespace MuCplGen
                 << " income data type=" << data_type_name;
             throw(Exception(ss.str()));
         }
+    private:
+        static std::string scoped_on;
 
         template<class Ret>
         std::any* RecordRet(Ret&& ret, const std::vector<std::any*>& data)

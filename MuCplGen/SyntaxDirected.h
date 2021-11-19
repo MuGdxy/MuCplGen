@@ -350,11 +350,11 @@ namespace MuCplGen
 			return nullptr;
 		}
 
+
+
 		template<class T>
-		T GetErrorData(ParserErrorData* error)
-		{
-			return std::any_cast<T&>(error->data);
-		}
+		T GetErrorData(ParserErrorData* error) { return std::any_cast<T>(error->data); }
+
 		size_t debug_option = 0;
 #pragma endregion
 	};
