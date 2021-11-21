@@ -12,6 +12,7 @@ namespace MuCplGen
 	class EasyScanner : public Scanner<EasyToken>
 	{
 		using Token = EasyToken;
+		ScannRule* keyword;
 	public:
 		MU_NOINLINE
 		EasyScanner()
@@ -34,7 +35,7 @@ namespace MuCplGen
 
 			auto& num = CreateRule();
 			num.tokenType = "number";
-			num.expression = R"(^(\-|\+)?\d+(\.\d+)?)";
+			num.expression = R"(^\d+(\.\d+)?)";
 			num.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::number;
@@ -55,7 +56,7 @@ namespace MuCplGen
 
 			auto& arith_operator = CreateRule();
 			arith_operator.tokenType = "arith_op";
-			arith_operator.expression = R"(^(\+|\-|\*|/))";
+			arith_operator.expression = R"(^(\+|\-|\*|/|\^))";
 			arith_operator.onSucceed = [this](std::smatch&, Token& token)->ScannActionResult
 			{
 				token.type = Token::TokenType::arith_op;
@@ -95,6 +96,7 @@ namespace MuCplGen
 			};
 
 			auto& keyword = CreateRule();
+			this->keyword = &keyword;
 			keyword.tokenType = "keyword";
 			keyword.expression = 
 				"^(void|char|float|int|return|enum|struct|class|private|switch"
@@ -127,6 +129,8 @@ namespace MuCplGen
 				return SaveToken;
 			};
 		}
+
+		void SetKeyword(const std::regex& r) { keyword->expression = r; }
 	};
 }
 

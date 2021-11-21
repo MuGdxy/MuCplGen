@@ -1,3 +1,7 @@
+
+
+
+
 # Mu Compiler Generator
 
 <table border = 0>
@@ -76,9 +80,12 @@ using namespace MuCplGen;
 
 int main()
 {
+	std::vector<LineContent> lines;
 	LineContent line;
 	line.line_no = 1;
+    std::cout << "Calculate:";
 	std::cin >> line.content;
+	lines.push_back(line);
 }
 ```
 
@@ -89,44 +96,323 @@ For convinience, this time, we read the console as input.
 `EasyScanner` is a predefined Scanner, which can recognize:
 
 - number
-- arithmatic operator
+- arithmetic operator
 - relation operator
 - ...
 
-we just ask `EasyScanner` to recoginze number and arithmatic operator for us.
+we just ask `EasyScanner` to recoginze number and arithmetic operator for us.
 
 ```cpp
 int main()
 {
     ...
-    EasyScanner easyScanner;
-	std::vector<EasyToken> tokens = easyScanner.Scann({ line });
+	EasyScanner easyScanner;
+	std::vector<EasyToken> tokens = easyScanner.Scann(lines);
 }
 ```
 
 after scanning, `EasyScanner` returns a list of tokens to us, which will be the input of our Parser.
 
-### Analyse Expression
+### Analyze Expression
 
 To define our Parser, we need some rules, which is called **CFG**.
 
-An arithmatic expression can be defined as follows:
-$$
-\begin{align}
-E\_& \rarr E\\
-E&\rarr T\\
-E& \rarr T \ + \ E\\
-E& \rarr T \ - \ E\\
-T& \rarr F \ * \ T\\
-T& \rarr F \ / \ T\\
-T& \rarr F\\
-F&\rarr (\ E\ )\\		
-F&\rarr	- E\\							
-F&\rarr E\\
-F&\rarr Number
-\end{align}
-$$
-[TODO]
+An arithmetic expression can be defined as follows:
+
+```cpp
+Expr->	E
+//priority 3(+ -)
+E	->	E + T
+E	->	E - T
+E	->	T
+//priority 2(* /)
+T	->	T * P
+T	->	T / P
+T	->	P
+//priority 1(^)
+P	->	P ^ F //power
+P	->	F
+//priority 0
+F	->	Num
+F	->	( E )
+```
+
+The part on the left of `->` is called **Head** of the production, while items on the right called **Body**. Every production indicates which **Head** can produce which **Body**.
+
+Explaining arithmetic expression in this way help us to take the expression apart tree-like obeying the arithmetic rule.
+
+e.g. When `E -> E + T` happens, we know it's safe and logical to do the addition operation between `E` and `T`, without any fear about the priority.
+
+### Create a Parser
+
+Create a cpp header file in your project, called "Calculator", this time, a `SLR parser` is enough, and we use the predefined token `EasyToken`.
+
+```cpp
+using namespace MuCplGen;
+class Calculator :public SyntaxDirected<SLRParser<EasyToken>>
+{
+	Calculator(std::ostream& log = std::cout) : SyntaxDirected(log)
+	{
+
+	}
+};
+```
+
+### Define the Semanitc Action
+
+Once a production happen, the Semantic Action attaching on it will involke.
+
+We use the semantic action to pass on the calculated value, and finally get the result when `Expr -> E` happens. So we need to define how to process and pass on the value in every intermediate production.
+
+Before doing so, we need to tell our parser how we translate an input token as terminator(who can never be a **Head**, cuz as its name, it's the end of the produce process)
+
+```cpp
+using namespace MuCplGen;
+class Calculator :public SyntaxDirected<SLRParser<EasyToken>>
+{
+public:
+	Calculator(std::ostream& log = std::cout) : SyntaxDirected(log)
+	{
+		{
+			//translate number token as terminator Num
+			auto& t = CreateTerminator();
+			t.name = "Num";
+			t.translation = [this](const Token& token)
+			{
+				return token.type == Token::TokenType::number;
+			};
+		}
+        ...
+	}
+};
+```
+
+and then, we define the first Semantic Action right after the terminator definition.
+
+```cpp
+{
+    auto& p = CreateParseRule();
+    p.expression = "F -> Num";
+    //first template parameter is the return type, and others are input parameters
+    p.SetAction<float, Empty>(
+        [this](Empty)->float
+        {
+            auto& token = CurrentToken();
+            return std::stof(token.name);
+        });
+}
+```
+
+here, when `F -> Num` happens, we take the current token, and we know it should be a number, so we just convert it from string to float, and pass it on. Thus any CFG rule who has an `F` in its **Body** can get this float data from the `F`.
+
+Notice that, we places an `Empty` as the parameter, we need it to save a place for those who doesn't pass any data. In this case, the `Num` doesn't take any data, so we place `Empty` for it.
+
+
+
+as for, `P -> F`, we know `F` takes a `float`, and this production is just for a priority decreasing, without further semantic aim, so we simply `PassOn` the first data. i.e. `P` takes the `float` from `F`.  Thus any CFG rule who has an `P` in its **Body** can get this `float` data from the `P`. 
+
+```cpp
+{
+    auto& p = CreateParseRule();
+    p.expression = "P -> F";
+    p.SetAction(PassOn(0));
+}
+```
+
+`SetAction(PassOn(0))` is defualt.
+
+
+
+cool, now we are going to calculate something.
+
+`P	->	P ^ F `
+
+```cpp
+{
+    auto& p = CreateParseRule();
+    p.action_name = "Power()";
+    p.expression = "P -> P ^ F";
+    p.SetAction<float, float, Empty, float>(
+        [this](float P, Empty, float F)->float
+        {
+            return std::pow(P, F);
+        });
+}
+```
+
+this time, we give a name to this action(only for debug and readability). 
+
+But why is the action so simple? 
+
+We solve the problem from small! We know `P` takes a float data, so does `F`, only thing we need to do is to do the `power(P,F)`.
+
+But, here pay attention to the `Empty` , which saves the place for `^`, cuz `^` doesn't takes any data. if you forget it, the type-safety-checker will throw an exception to you. 
+
+
+
+So do the rest rules.
+
+```cpp
+{
+    auto& p = CreateParseRule();
+    p.expression = "T -> P";
+}
+
+{
+    auto& p = CreateParseRule();
+    p.action_name = "Multipy()";
+    p.expression = "T -> T * P";
+    p.SetAction<float, float, Empty, float>(
+        [this](float T, Empty, float P)->float
+        {
+            return T * P;
+        });
+}
+
+{
+    auto& p = CreateParseRule();
+    p.action_name = "Divid()";
+    p.expression = "T -> T / P";
+    p.SetAction<float, float, Empty, float>(
+        [this](float T, Empty, float P)->float
+        {
+            return T / P;
+        });
+}
+
+{
+    auto& p = CreateParseRule();
+    p.expression = "E -> T";
+}
+
+{
+    auto& p = CreateParseRule();
+    p.action_name = "Add()";
+    p.expression = "E -> E + T";
+    p.SetAction<float, float, Empty, float>(
+        [this](float E, Empty, float T)->float
+        {
+            return E + T;
+        });
+}
+
+{
+    auto& p = CreateParseRule();
+    p.action_name = "Sub()";
+    p.expression = "E -> E - T";
+    p.SetAction<float, float, Empty, float>(
+        [this](float E, Empty, float T)->float
+        {
+            return E - T;
+        });
+}
+
+{
+    auto& p = CreateParseRule();
+    p.action_name = "Compress()";
+    p.expression = "F -> ( E )";
+    p.SetAction(PassOn(1));
+}
+```
+
+
+
+Finially never forget the `Expr -> E`, this is the entrance of all productions, we need to set this rule as the first rule, although it does nothing at all.
+
+```cpp
+{
+    //translate number token as terminator Num
+    auto& t = CreateTerminator();
+    t.name = "Num";
+    t.translation = [this](const Token& token)
+    {
+        return token.type == Token::TokenType::number;
+    };
+}
+
+{
+    auto& p = CreateParseRule();
+    p.expression = "Expr -> E";
+    p.SetAction<Empty, float>(
+        [this](float res)->Empty
+        {
+            std::cout << "Result = " << res << std::endl;
+            return Empty{};
+        });
+}
+...
+```
+
+### Use Our Own Parser
+
+Go back to our main.cpp file, include `Calculator.h`, and create a `Calculator` object in the main function, call `Build()` on `Calculator` to build the **PDA**. 
+
+```cpp
+//main.cpp
+#include <MuCplGen/MuCplGen.h>
+#include <Calculator.h>
+using namespace MuCplGen;
+
+int main()
+{
+	std::vector<LineContent> lines;
+	LineContent line;
+	line.line_no = 1;
+	std::cout << "Calculate:";
+	std::cin >> line.content;
+	lines.push_back(line);
+
+	EasyScanner easyScanner;
+	std::vector<EasyToken> tokens = easyScanner.Scann(lines);
+    Highlight(lines, tokens);
+    
+	Calculator calculator;
+	calculator.Build();
+	calculator.Parse(lines, tokens);
+}
+```
+
+Run:
+
+![image-20211121173909113](README.assets/image-20211121173909113.png)
+
+If you have any problem, please check[ `Examples/Calculator`](./Examples/Calculator), or using CMake to build the Examples. 
+
+cool! It works. but, what if something wrong?
+
+![image-20211121174052577](README.assets/image-20211121174052577.png)
+
+good!
+
+So how can we get more detail debug info, e.g. how the PDA works? 
+
+```cpp
+class Calculator :public SyntaxDirected<SLRParser<EasyToken>>
+{
+public:
+	Calculator(std::ostream& log = std::cout) : SyntaxDirected(log)
+	{
+		debug_option = Debug::DebugOption::ShowReductionProcess;
+        ...
+    }
+}
+```
+
+Setup  `debug_option` as `ShowReductionProcess`.
+
+Run again.
+
+![image-20211121175018648](README.assets/image-20211121175018648.png)
+
+It works pretty well. There are quite a lot of Debug Info MuCplGen can provide, please set the `debug_options` to test the debug info by yourself.
+
+### Further
+
+In the following content, we are going into more details about how MuCplGen works.
+
+- if you want to create a Scanner by yourself please check the Chapter [Scanner](#Scanner).
+
+- if you need more info about Parser, please check the Chapter [Syntax-Directed Parser](#Syntax-Directed Parser)
 
 ## Scanner
 
@@ -342,7 +628,11 @@ Context Free Grammar (CFG) based.
 
 ### Store Tables
 
-It consumes substantial time to build a **PDA** from **CFG**, when the amount of states grows more than 3k. So **MuCplGen** provides a mechanism to store the build result in binary form. It's up to you whether to save or load a build result. (Sometimes IO is slower than directly build a **PDA** ) .
+It consumes substantial time to build a **PDA** from **CFG**, when the amount of states grows more than 3k. So **MuCplGen** provides a mechanism to store the build result in binary form. 
+
+:heavy_exclamation_mark: The binary form storage is not cross-platform, however, is machine-relative.
+
+It's up to you whether to save or load a build result. (Sometimes IO is slower than directly build a **PDA** ) .
 
 this is the first time to build a **PDA**，which takes 69ms.
 
@@ -369,7 +659,7 @@ struct CustomToken
     ...
 }
 
-class CustomParser :public SyntaxDirected<SLRParser<CustomToken, size_t>>
+class CustomParser :public SyntaxDirected<SLRParser<CustomToken>>
 {
 public:
 	CustomParser(std::ostream& log = std::cout) :SyntaxDirected(log)
@@ -389,6 +679,8 @@ public:
 | LoadAndSave | asways load and save.                              |
 
 if load fails, the **Parser** roll back to the runtime mode, rebuild the **PDA** from your **CFG**.
+
+
 
 # Appendix
 

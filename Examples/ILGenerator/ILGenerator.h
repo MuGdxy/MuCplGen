@@ -5,7 +5,7 @@
 #include "../../MuCplGen/Token.h"
 
 using namespace MuCplGen;
-class ILGenerator :public SyntaxDirected<SLRParser<EasyToken, size_t>>
+class ILGenerator :public SyntaxDirected<SLRParser<EasyToken>>
 {
 public:
 	ILGenerator(std::ostream& log = std::cout) :SyntaxDirected(log)
