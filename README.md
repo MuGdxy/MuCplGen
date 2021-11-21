@@ -16,7 +16,9 @@
     	</td>
     </tr>
 </table>
+
 <img src = "README.assets/preview.png">
+
 [frequent-update-repo](https://revdolgaming.coding.net/public/musys/MuCompilerGenerator/git/files).
 ```shell
 git clone https://e.coding.net/revdolgaming/musys/MuCompilerGenerator.git
