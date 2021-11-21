@@ -16,7 +16,7 @@
     	</td>
     </tr>
 </table>
-![image-20211118132158712](README.assets/image-20211118132158712.png)
+![preview](README.assets/preview.png)
 
 [frequent-update-repo](https://revdolgaming.coding.net/public/musys/MuCompilerGenerator/git/files).
 ```shell
