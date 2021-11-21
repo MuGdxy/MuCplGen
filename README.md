@@ -14,6 +14,11 @@
 </table>
 ![image-20211118132158712](README.assets/image-20211118132158712.png)
 
+[frequent-update-repo](https://revdolgaming.coding.net/public/musys/MuCompilerGenerator/git/files).
+```shell
+git clone https://e.coding.net/revdolgaming/musys/MuCompilerGenerator.git
+```
+
 ## Introduction
 
 **MuCompilerGenerator(MuCplGen)** is a Header-Only dynamic compiler generator based on C++ 17.
