@@ -14,7 +14,8 @@
     	</td>
     </tr>
 </table>
-![preview](README.assets/preview.png)
+
+<img src = "README.assets/preview.png">
 
 [frequent-update-repo](https://revdolgaming.coding.net/public/musys/MuCompilerGenerator/git/files).
 ```shell
