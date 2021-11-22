@@ -16,6 +16,5 @@ int main()
 	Highlight(lines, tokens);
 
 	Calculator calculator;
-	calculator.Build();
 	calculator.Parse(lines, tokens);
 }

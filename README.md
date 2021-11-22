@@ -1,7 +1,5 @@
 
 
-
-
 # Mu Compiler Generator
 
 <table border = 0>
@@ -345,7 +343,7 @@ Finially never forget the `Expr -> E`, this is the entrance of all productions, 
 
 ### Use Our Own Parser
 
-Go back to our main.cpp file, include `Calculator.h`, and create a `Calculator` object in the main function, call `Build()` on `Calculator` to build the **PDA**. 
+Go back to our main.cpp file, include `Calculator.h`, and create a `Calculator` object in the main function, call `Parse()` on `Calculator` to build the process the input tokens. 
 
 ```cpp
 //main.cpp
@@ -367,7 +365,6 @@ int main()
     Highlight(lines, tokens);
     
 	Calculator calculator;
-	calculator.Build();
 	calculator.Parse(lines, tokens);
 }
 ```
