@@ -151,10 +151,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\Calculator\main.cpp" />
+    <ClCompile Include="Examples\CalculatorSubModule\main.cpp" />
     <ClCompile Include="Examples\ILGenerator\ILSymbolTable.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Examples\CalculatorSubModule\Calculator.h" />
     <ClInclude Include="Examples\Calculator\Calculator.h" />
     <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
     <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />

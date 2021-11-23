@@ -116,7 +116,7 @@ public:
 		}
 
 		//_Global:
-		ParseRule::SetCurrentScope("_Global");
+		Scope("_Global");
 
 		//	Prgm_ -> Prgm
 		{
@@ -221,7 +221,7 @@ public:
 		}
 
 		//_Definition
-		ParseRule::SetCurrentScope("_Definition");
+		Scope("_Definition");
 		//	Stc -> M0 VarDef
 		{
 			auto& p = CreateParseRule();
@@ -530,7 +530,7 @@ public:
 		};
 
 		//_Assignment:
-		ParseRule::SetCurrentScope("_Assignment");
+		Scope("_Assignment");
 		//	Asgn -> LVal = Expr ; {assign};
 		{
 			auto& p = CreateParseRule();

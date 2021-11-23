@@ -40,24 +40,67 @@ namespace MuCplGen
         std::string name;
         int priority = 0;
         std::function<bool(const Token&)> translation;
+        std::string ScopedName(const std::string& name)
+        {
+            if (scope.empty()) return name;
+            else if (name.find(".") == -1) return scope + "." + name;
+            else return name;
+        }
     private:
         T sym;
     };
 
     struct ParseRule
-    { 
-        ParseRule()
-        {
-            if (!scoped_on.empty()) scope = scoped_on;
-        }
+    {
         template<class Parser>
         friend class SyntaxDirected;
         std::string action_name;
         std::string expression;
-        std::string scope = "_Global";
+        std::string scope;
+        //std::vector<std::string> scopes;
         using SemanticAction = std::function<std::any* (std::vector<std::any*>)>;
+        std::string head;
+        std::vector<std::string> body;
+        
+        std::string ScopedName(const std::string& name)
+        {
+            if (scope.empty()) return name;
+            else if (name.find(".") == -1) return scope + "." + name;
+            else return name;
+        }
+
+        //std::string ScopedName(const std::string& name)
+        //{
+        //    if(scopes.empty()) return name;
+        //    else if (name.find(".") == -1)
+        //    {
+        //        std::stringstream ss;
+        //        for (auto& scope : scopes) ss << scope << ".";
+        //        ss << name;
+        //        return ss.str();
+        //    }
+        //    else return name;
+        //}
+
+        //void PushScope(const std::string& scope) { scopes.push_back(scope); }
+        void ParseExpression()
+        {
+            std::stringstream ss(expression);
+            std::string buf;
+            ss >> buf;
+            head = ScopedName(buf);
+            ss >> buf;
+            if (buf != "->") throw(Exception("Error Syntax"));
+            buf.clear();
+            while (true)
+            {
+                buf.clear();
+                ss >> buf;
+                if (buf.empty()) break;
+                body.push_back(buf);
+            }
+        }
     public:
-        static void SetCurrentScope(const std::string& scope) { scoped_on = scope; }
         template<class Ret>
         void SetSemanticErrorAction(std::function<Ret(const std::vector<std::any*>&)> on_error)
         {

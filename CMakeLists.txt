@@ -23,11 +23,19 @@ set(CMAKE_CXX_FLAGS "--std=c++17 -lstdc++fs")
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 if(Examples)
-    add_executable(Calculator
-    "Examples/Calculator/main.cpp"
-    "Examples/Calculator/Calculator.h"
+    add_executable(
+        Calculator
+        "Examples/Calculator/main.cpp"
+        "Examples/Calculator/Calculator.h"
     )
-    add_executable(ILGenerator
+    add_executable(
+        CalculatorSubModule
+        "Examples/CalculatorSubModule/main.cpp"
+        "Examples/CalculatorSubModule/Calculator.h"
+    )
+
+    add_executable(
+        ILGenerator
         "Examples/ILGenerator/main.cpp"
         "Examples/ILGenerator/ILSymbolTable.cpp"
         "Examples/ILGenerator/ILGenerator.h"
@@ -36,6 +44,7 @@ if(Examples)
     if(gpp)
         target_link_libraries(ILGenerator stdc++fs)
         target_link_libraries(Calculator stdc++fs)
+        target_link_libraries(CalculatorSubModule stdc++fs)
         message("link: stdc++fs")
     endif()
     file(COPY "${PROJECT_SOURCE_DIR}/assignment_test.txt" DESTINATION ${PROJECT_BINARY_DIR})
