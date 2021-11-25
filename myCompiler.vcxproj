@@ -107,10 +107,12 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalOptions> /GH /Gh %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(MICROPROFILERDIR)/micro-profiler_$(PlatformName).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -152,13 +154,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Examples\CalculatorSubModule\main.cpp" />
-    <ClCompile Include="Examples\ILGenerator\ILSymbolTable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Examples\CalculatorSubModule\Calculator.h" />
-    <ClInclude Include="Examples\Calculator\Calculator.h" />
-    <ClInclude Include="Examples\ILGenerator\ILGenerator.h" />
-    <ClInclude Include="Examples\ILGenerator\ILSymbolTable.h" />
     <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugToken.h" />

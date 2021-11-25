@@ -260,7 +260,7 @@ namespace MuCplGen
 		}
 
 	size_t token_iter = 0;
-	TokenSet* token_set;
+	TokenSet* token_set = nullptr;
 	std::vector<LineContent>* input_text = nullptr;
 	std::string storage = "";
 public:
@@ -324,7 +324,7 @@ public:
 	}
 
 	MU_NOINLINE
-		ParserErrorData* NextSemanticError(std::vector<std::any*> input, int& next)
+	ParserErrorData* NextSemanticError(std::vector<std::any*> input, int& next)
 	{
 		auto first = next + 1;
 		auto size = input.size();
@@ -351,6 +351,7 @@ public:
 	{
 		for (auto rule : terminator_rules) delete rule;
 	}
+
 #pragma region For Custom Code 
 protected:
 	BuildOption generation_option = BuildOption::Runtime;
