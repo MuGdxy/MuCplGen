@@ -377,9 +377,11 @@ protected:
 	class BaseSubModule
 	{
 	protected:
+		std::string scope;
 		BaseSyntaxDirected& bsd;
 	public:
-		BaseSubModule(BaseSyntaxDirected& bsd):bsd(bsd){}
-		virtual void CreateRules(const std::string& scope, const std::string& out_nonterm) = 0;
+		BaseSubModule(BaseSyntaxDirected& bsd, const std::string& scope):bsd(bsd), scope(scope){}
+		virtual void CreateRules(const std::string& out_nonterm) = 0;
+		virtual void DependentOn(BaseSubModule& bsd) {};
 	};
 }
