@@ -4,9 +4,8 @@
 using namespace MuCplGen;
 class CalculatorSubModule : public BaseSubModule
 {
-	std::string scope;
 public:
-	CalculatorSubModule(BaseSyntaxDirected* bsd) : BaseSubModule(*bsd) {}
+	CalculatorSubModule(BaseSyntaxDirected* bsd, const std::string& scope) : BaseSubModule(*bsd, scope) {}
 
 	ParseRule& CreateParseRule()
 	{
@@ -17,9 +16,8 @@ public:
 
 	//Input: [Scope.]Num<float>
 	//Output: [Scope.]out_nonterm<float>
-	MU_NOINLINE void CreateRules(const std::string& scope, const std::string& out_nonterm) override
+	MU_NOINLINE void CreateRules(const std::string& out_nonterm) override
 	{
-		this->scope = scope;
 		{
 			auto& p = CreateParseRule();
 			p.head = out_nonterm;
@@ -119,7 +117,8 @@ class MainCalculator : public SyntaxDirected<SLRParser<EasyToken>>
 	CalculatorSubModule cs;
 public:
 	MainCalculator(std::ostream& log = std::cout) 
-		: SyntaxDirected(log), cs(this)
+		: SyntaxDirected(log), 
+		cs(this, "CalSub")
 	{
 		debug_option = DebugOption::ConciseInfo | DebugOption::ShowProductionTable;
 		generation_option = BuildOption::LoadAndSave;
@@ -146,7 +145,7 @@ public:
 				});
 		}
 
-		cs.CreateRules("CalSub", "Expr");
+		cs.CreateRules("Expr");
 
 		{
 			auto& p = CreateParseRule();
