@@ -5,14 +5,20 @@ using namespace MuCplGen;
 class CalculatorSubModule : public BaseSubModule
 {
 public:
-	CalculatorSubModule(BaseSyntaxDirected* bsd, const std::string& scope) : BaseSubModule(*bsd, scope) {}
+	CalculatorSubModule(BaseSyntaxDirected* bsd, const std::string& scope) 
+		: BaseSubModule(bsd, scope) {}
 
-	ParseRule& CreateParseRule()
+	enum Config
 	{
-		auto& tmp = bsd.CreateParseRule();
-		tmp.scope = scope;
-		return tmp;
-	}
+		None = 0,
+		Add = 1,
+		Sub = 1 << 1,
+		Mul = 1 << 2,
+		Div = 1 << 3,
+		Pow = 1 << 4,
+		NoPow = Add|Sub|Mul|Div,
+		All = NoPow|Pow 
+	} config = Config::All;
 
 	//Input: [Scope.]Num<float>
 	//Output: [Scope.]out_nonterm<float>
@@ -22,7 +28,6 @@ public:
 			auto& p = CreateParseRule();
 			p.head = out_nonterm;
 			p.body = { "E" };
-
 		}
 
 		{
@@ -38,6 +43,7 @@ public:
 			p.SetAction(PassOn(0));
 		}
 
+		if(config & Config::Pow)
 		{
 			auto& p = CreateParseRule();
 			p.action_name = "Power()";
@@ -54,6 +60,7 @@ public:
 			p.expression = "T -> P";
 		}
 
+		if (config & Config::Mul)
 		{
 			auto& p = CreateParseRule();
 			p.action_name = "Multipy()";
@@ -65,6 +72,7 @@ public:
 				});
 		}
 
+		if (config & Config::Div)
 		{
 			auto& p = CreateParseRule();
 			p.action_name = "Divid()";
@@ -81,6 +89,7 @@ public:
 			p.expression = "E -> T";
 		}
 
+		if (config & Config::Add)
 		{
 			auto& p = CreateParseRule();
 			p.action_name = "Add()";
@@ -92,6 +101,7 @@ public:
 				});
 		}
 
+		if (config & Config::Sub)
 		{
 			auto& p = CreateParseRule();
 			p.action_name = "Sub()";
@@ -121,7 +131,7 @@ public:
 		cs(this, "CalSub")
 	{
 		debug_option = DebugOption::ConciseInfo | DebugOption::ShowProductionTable;
-		generation_option = BuildOption::LoadAndSave;
+		generation_option = BuildOption::Runtime;
 		SetStorage("./storage/MainCalculator.bin");
 
 		{
@@ -144,7 +154,7 @@ public:
 					return Empty{};
 				});
 		}
-
+		
 		cs.CreateRules("Expr");
 
 		{
