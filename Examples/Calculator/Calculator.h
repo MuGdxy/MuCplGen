@@ -1,4 +1,5 @@
 #pragma once
+#include <cmath>
 #include "../../MuCplGen/MuCplGen.h"
 
 using namespace MuCplGen;
