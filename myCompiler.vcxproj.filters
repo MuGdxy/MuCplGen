@@ -31,9 +31,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\CalculatorSubModule\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="MuCplGen\DefinitionCompiler.h" />
     <ClInclude Include="MuCplGen\FileLoader.h" />
     <ClInclude Include="MuCplGen\DebugTool\Highlight.h" />
@@ -66,5 +63,8 @@
     <None Include="complete_syntax.syn">
       <Filter>Resource Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Examples\CalculatorSubModule\main.cpp" />
   </ItemGroup>
 </Project>

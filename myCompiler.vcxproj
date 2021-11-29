@@ -153,9 +153,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\CalculatorSubModule\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Examples\CalculatorSubModule\Calculator.h" />
     <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
@@ -184,6 +181,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="complete_syntax.syn" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Examples\CalculatorSubModule\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -323,8 +323,13 @@ public:
 		return NextSemanticError(input, next);
 	}
 
-	MU_NOINLINE
-	ParserErrorData* NextSemanticError(std::vector<std::any*> input, int& next)
+	/*
+	usage:
+	int next = -1;
+	while(true) 
+	{ auto data = NextSemanticError(input, next); ... if(!data) break;}
+	*/
+	MU_NOINLINE ParserErrorData* NextSemanticError(std::vector<std::any*> input, int& next)
 	{
 		auto first = next + 1;
 		auto size = input.size();

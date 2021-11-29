@@ -14,12 +14,6 @@ enum class ActionType
 	reduce
 };
 
-struct StopParsing
-{
-	explicit StopParsing(std::string content) :content(content) {}
-	std::string content;
-};
-
 template <typename T>
 class PushDownAutomaton
 {

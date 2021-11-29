@@ -22,6 +22,8 @@
 git clone https://e.coding.net/revdolgaming/musys/MuCompilerGenerator.git
 ```
 
+Author: lxy819469559@gmail.com
+
 ## Introduction
 
 **MuCompilerGenerator(MuCplGen)** is a Header-Only dynamic compiler generator based on C++ 17.
@@ -409,8 +411,10 @@ It works pretty well. There are quite a lot of Debug Info MuCplGen can provide, 
 In the following content, we are going into more details about how MuCplGen works.
 
 - if you want to create a Scanner by yourself please check the Chapter [Scanner](#Scanner).
-
 - if you need more info about Parser, please check the Chapter [Syntax-Directed Parser](#Syntax-Directed Parser)
+  - using SubModule
+  - throw Semantic Error
+
 
 ## Scanner
 
@@ -623,6 +627,338 @@ Context Free Grammar (CFG) based.
 | SLR        | `SLRParser<UserToken,T>` | :heavy_check_mark: |
 | LR1        | `LR1Parser<UserToken,T>` | :heavy_check_mark: |
 | BaseParser |                          | :x:                |
+
+### SubModule
+
+in this chapter we introduce **SubModule**. 
+
+We implement a cool calculator in [Quick Start](#Quick Start), but we find the function of calculating some const expression is pretty common and useful, so we tend to pack it as a sub-module.
+
+Derive your SubModule from BaseSubModule.
+
+```cpp
+#include <MuCplGen/MuCplGen.h>
+
+using namespace MuCplGen;
+class CalculatorSubModule : public BaseSubModule
+{
+public:
+	CalculatorSubModule(BaseSyntaxDirected* bsd, const std::string& scope) 
+		: BaseSubModule(bsd, scope) {}
+};
+```
+
+`bsd` is the base class of `SyntanxDirected<Parser>`, `scope` is the scope for this SubModule, which will be asigned by the caller, i.e the ourside Parser.
+
+In class `CalculatorSubModule` we define an enum, to provide some choices about which kind of expression can be recognized. And then we implement the abstract virtual function `CreateRules`in base class.
+
+```cpp
+enum Config
+{
+    None = 0,
+    Add = 1,
+    Sub = 1 << 1,
+    Mul = 1 << 2,
+    Div = 1 << 3,
+    Pow = 1 << 4,
+    NoPow = Add|Sub|Mul|Div,
+    All = NoPow|Pow 
+} config = Config::All;
+
+//Input: [Scope.]Num<float>
+//Output: [Scope.]out_nonterm<float>
+MU_NOINLINE void CreateRules(const std::string& out_nonterm) override
+{
+    {
+        //output Non-Terminator
+        auto& p = CreateParseRule();
+        p.head = out_nonterm;
+        p.body = { "E" };
+    }
+
+    {
+        auto& p = CreateParseRule();
+        p.expression = "F -> Num";
+        p.head = "F";
+        p.body = { "Num" };
+    }
+
+    {
+        auto& p = CreateParseRule();
+        p.expression = "P -> F";
+        p.SetAction(PassOn(0));
+    }
+
+    if(config & Config::Pow)
+    {
+        auto& p = CreateParseRule();
+        p.action_name = "Power()";
+        p.expression = "P -> P ^ F";
+        p.SetAction<float, float, Empty, float>(
+            [this](float P, Empty, float F)->float
+            {
+                return std::pow(P, F);
+            });
+    }
+
+    {
+        auto& p = CreateParseRule();
+        p.expression = "T -> P";
+    }
+
+    if (config & Config::Mul)
+    {
+        auto& p = CreateParseRule();
+        p.action_name = "Multipy()";
+        p.expression = "T -> T * P";
+        p.SetAction<float, float, Empty, float>(
+            [this](float T, Empty, float P)->float
+            {
+                return T * P;
+            });
+    }
+
+    if (config & Config::Div)
+    {
+        auto& p = CreateParseRule();
+        p.action_name = "Divid()";
+        p.expression = "T -> T / P";
+        p.SetAction<float, float, Empty, float>(
+            [this](float T, Empty, float P)->float
+            {
+                return T / P;
+            });
+    }
+
+    {
+        auto& p = CreateParseRule();
+        p.expression = "E -> T";
+    }
+
+    if (config & Config::Add)
+    {
+        auto& p = CreateParseRule();
+        p.action_name = "Add()";
+        p.expression = "E -> E + T";
+        p.SetAction<float, float, Empty, float>(
+            [this](float E, Empty, float T)->float
+            {
+                return E + T;
+            });
+    }
+
+    if (config & Config::Sub)
+    {
+        auto& p = CreateParseRule();
+        p.action_name = "Sub()";
+        p.expression = "E -> E - T";
+        p.SetAction<float, float, Empty, float>(
+            [this](float E, Empty, float T)->float
+            {
+                return E - T;
+            });
+    }
+
+    {
+        auto& p = CreateParseRule();
+        p.action_name = "Compress()";
+        p.expression = "F -> ( E )";
+        p.SetAction(PassOn(1));
+    }
+}
+```
+
+Everything looks like the it was, in [Quick Start](#Quick Start), but the first rules.
+
+This time, we quit the string-based rule, and use the structured head/body.
+
+`head` is the name of out non-term, for the outside parser to retrieve, and `body` is the a vector of string, tells the deduced non-term. The string-based one and the structured one, are equivalent, but the later is more convenient to involve arguments. 
+
+
+
+To use SubModule:
+
+In our Main Parser.
+
+```cpp
+class MainCalculator : public SyntaxDirected<SLRParser<EasyToken>>
+{
+    //our SubModule
+	CalculatorSubModule cs;
+public:
+	MainCalculator(std::ostream& log = std::cout) 
+		: SyntaxDirected(log), 
+		cs(
+            this, //BaseSyntaxDirected
+           "CalSub" //the scope name for CalculatorSubModule
+          )
+	{
+		debug_option = DebugOption::ConciseInfo | DebugOption::ShowProductionTable;
+		generation_option = BuildOption::Runtime;
+		
+		{
+			//translate number token as terminator Num
+			auto& t = CreateTerminator();
+			t.name = "Num";
+			t.translation = [this](const Token& token)
+			{
+				return token.type == Token::TokenType::number;
+			};
+		}
+
+		{
+			auto& p = CreateParseRule();
+            //get the ouput data from our SubModule
+            //the output data is in the non-term: <scope>.Expr
+            //this time <scope> = CalSub
+			p.expression = "Expr -> CalSub.Expr";
+			p.SetAction<Empty, float>(
+				[this](float res)->Empty
+				{
+					std::cout << "Result = " << res << std::endl;
+					return Empty{};
+				});
+		}
+		
+		cs.CreateRules("Expr");
+
+		{
+			auto& p = CreateParseRule();
+            //pass the input data for our SubModule
+            //to fill the requirement of CalculatorSubModule
+            //we need to pass a float data to <scope>.Num(a non-term in CalculatorSubModule)
+            //this time <scope> = CalSub
+			p.expression = "CalSub.Num -> Num";
+			p.SetAction<float, Empty>(
+				[this](Empty)->float
+				{
+					auto& token = CurrentToken();
+					return std::stof(token.name);
+				});
+		}
+	}
+};
+```
+
+In main.cpp:
+
+```cpp
+#include <MuCplGen/MuCplGen.h>
+#include "Calculator.h"
+using namespace MuCplGen;
+
+int main()
+{
+	MainCalculator calculator;
+	calculator.Build();
+
+	std::vector<LineContent> lines;
+	LineContent line;
+	line.line_no = 1;
+	std::cout << "Calculate:";
+	std::cin >> line.content;
+	lines.push_back(line);
+
+	EasyScanner easyScanner;
+	std::vector<EasyToken> tokens = easyScanner.Scann(lines);
+	Highlight(lines, tokens);
+
+	
+	calculator.Parse(lines, tokens);
+}
+```
+
+Run:
+
+![image-20211129202609568](README.assets/image-20211129202609568.png)
+
+
+
+As we can see, in the production table, those who have a scope `CalSub` are the members of the SubModule production table. A scope is necessary for avoiding conflicts. Of curse, it's the duty of main parser to dispatch the scope name, cuz SubModule knows nothing about scope.
+
+Only things the SubModule exposes is the input/output non-term, this time, `CalSub.Num` and `CalSub.E`.
+
+If you have any problem, please check [Examples/CalculatorSubModule](./Examples/CalculatorSubModule)
+
+### Solve Semantic Error
+
+This time, we are going to talk about how to passon semantic error infomation.
+
+We implement a cool calculator in [Quick Start](#Quick Start), recall:
+
+```cpp
+{
+    auto& p = CreateParseRule();
+    p.action_name = "Divid()";
+    p.expression = "T -> T / P";
+    p.SetAction<float, float, Empty, float>(
+        [this](float T, Empty, float P)->float
+        {
+            return T / P;
+        });
+}
+```
+
+this is the part we do division. of curse we know, `P` shouldn't be 0. so we want to catch the error, whenever a `0` is passed in. So we try to throw it out. 
+
+```cpp
+{
+    auto& p = CreateParseRule();
+    p.action_name = "Divid()";
+    p.expression = "T -> T / P";
+    p.SetAction<float, float, Empty, float>(
+        [this](float T, Empty, float P)->float
+        {
+            if (P == 0.0)
+            {
+                SemanticError se;
+                se.error_data.code = ParserErrorCode::SemanticError;
+                se.error_data.data = std::string("Error: Div 0");
+                throw(se);
+            }
+            return T / P;
+        });
+}
+```
+
+`SemanticError::error_data.code` is the code to tell parser what to do next, we leave the default value `ParserErrorCode::SemanticError` for let the parser go on.
+
+`SemanticError::error_data.data` is any data, you want to pass. Ok, now the problem is to catch the error data.
+
+```cpp
+{
+    auto& p = CreateParseRule();
+    p.expression = "Expr -> E";
+    p.SetAction<Empty, float>(
+        [this](float res)->Empty
+        {
+            std::cout << "Result = " << res << std::endl;
+            return Empty{};
+        });
+
+    p.SetSemanticErrorAction<Empty>(
+        [this](const std::vector<std::any*> data)->Empty
+        {
+            int next = -1;
+            auto error = NextSemanticError(data, next);
+            auto error_content = GetErrorData<std::string>(error);
+            std::cout << error_context << std::endl;
+            return Empty{};
+        });
+}
+```
+
+Recall that, `Expr -> E` is the exit point. If we've never catch the error in intermediate productions, the first error will always passon along the production chain.
+
+In `SetSemanticErrorAction`  we try to get the error information, as we defined, a string info.
+
+Your error_data can be much more complicated, (e.g. pass the token on, to tell the upper production where the error happens, etc.) it's your creation. 
+
+Run:
+
+![image-20211129195632231](README.assets/image-20211129195632231.png)
+
+if you have any problem, have a look at [Examples/SolveSemanticError](./Examples/SolveSemanticError).
 
 ### Store Tables
 

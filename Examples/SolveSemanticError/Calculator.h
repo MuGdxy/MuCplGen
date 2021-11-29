@@ -1,0 +1,142 @@
+#pragma once
+#include "../../MuCplGen/MuCplGen.h"
+
+using namespace MuCplGen;
+class Calculator :public SyntaxDirected<SLRParser<EasyToken>>
+{
+public:
+	Calculator(std::ostream& log = std::cout) : SyntaxDirected(log)
+	{
+		debug_option = Debug::DebugOption::ShowReductionProcess;
+		generation_option = BuildOption::Runtime;
+
+		{
+			//translate number token as terminator Num
+			auto& t = CreateTerminator();
+			t.name = "Num";
+			t.translation = [this](const Token& token)
+			{
+				return token.type == Token::TokenType::number;
+			};
+		}
+
+
+		{
+			auto& p = CreateParseRule();
+			p.expression = "Expr -> E";
+			p.SetAction<Empty, float>(
+				[this](float res)->Empty
+				{
+					std::cout << "Result = " << res << std::endl;
+					return Empty{};
+				});
+
+			p.SetSemanticErrorAction<Empty>([this](const std::vector<std::any*> data)->Empty
+				{
+					int next = -1;
+					auto error = NextSemanticError(data, next);
+					auto error_content = GetErrorData<std::string>(error);
+					std::cout << error_content << std::endl;
+					return Empty{};
+				});
+		}
+
+
+		{
+			auto& p = CreateParseRule();
+			p.expression = "F -> Num";
+			p.SetAction<float, Empty>(
+				[this](Empty)->float
+				{
+					auto& token = CurrentToken();
+					return std::stof(token.name);
+				});
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.expression = "P -> F";
+			p.SetAction(PassOn(0));
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.action_name = "Power()";
+			p.expression = "P -> P ^ F";
+			p.SetAction<float, float, Empty, float>(
+				[this](float P, Empty, float F)->float
+				{
+					return std::pow(P, F);
+				});
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.expression = "T -> P";
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.action_name = "Multipy()";
+			p.expression = "T -> T * P";
+			p.SetAction<float, float, Empty, float>(
+				[this](float T, Empty, float P)->float
+				{
+					return T * P;
+				});
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.action_name = "Divid()";
+			p.expression = "T -> T / P";
+			p.SetAction<float, float, Empty, float>(
+				[this](float T, Empty, float P)->float
+				{
+					
+					if (P == 0.0)
+					{
+						SemanticError se;
+						se.error_data.code = ParserErrorCode::SemanticError;
+						se.error_data.data = std::string("Error: Div 0");
+						throw(se);
+					}
+					return T / P;
+				});
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.expression = "E -> T";
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.action_name = "Add()";
+			p.expression = "E -> E + T";
+			p.SetAction<float, float, Empty, float>(
+				[this](float E, Empty, float T)->float
+				{
+					return E + T;
+				});
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.action_name = "Sub()";
+			p.expression = "E -> E - T";
+			p.SetAction<float, float, Empty, float>(
+				[this](float E, Empty, float T)->float
+				{
+					return E - T;
+				});
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.action_name = "Compress()";
+			p.expression = "F -> ( E )";
+			p.SetAction(PassOn(1));
+		}
+	}
+};
