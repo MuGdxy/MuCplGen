@@ -120,7 +120,7 @@ namespace MuCplGen
 			{
 				if (debug_option & DebugOption::ShowReductionProcess)
 				{
-					log << rule->expression << " Action{" << rule->action_name << "} => Semantic Error Occurs" << std::endl;
+					log << rule->fullname_expression << " Action{" << rule->action_name << "} => Semantic Error Occurs" << std::endl;
 				}
 				if (rule->semantic_error) return rule->semantic_error(input);
 				else return input[error_pos];
@@ -129,7 +129,7 @@ namespace MuCplGen
 			{
 				if (debug_option & DebugOption::ShowReductionProcess)
 				{
-					log << rule->expression << " Action{" << rule->action_name << "}" << std::endl;
+					log << rule->fullname_expression << " Action{" << rule->action_name << "}" << std::endl;
 				}
 				if (rule->semantic_action == nullptr) return nullptr;
 				else return rule->semantic_action(input);
@@ -185,7 +185,7 @@ namespace MuCplGen
 			//terminator
 			for (auto& rule : parse_rules)
 			{
-				if(rule->head.empty()) rule->ParseExpression();
+				rule->ParseExpression();
 				CheckAndAddSymbol(rule->ScopedName(rule->head));
 			}
 
@@ -234,6 +234,11 @@ namespace MuCplGen
 					else production.push_back(name_to_sym[name]);
 				}
 				auto head = rule->ScopedName(rule->head);
+				std::stringstream ss;
+				ss << head;
+				ss << " -> ";
+				for (auto& p : production) ss << sym_to_name[p] << " ";
+				rule->fullname_expression = ss.str();
 				production_table[name_to_sym[head]].push_back(std::move(production));
 				quick_parse_rule_table[name_to_sym[head]].push_back(rule);
 			}
@@ -253,7 +258,7 @@ namespace MuCplGen
 					for (auto& production : production_table[i])
 					{
 						log << sym_to_name[i] << " -> ";
-						for (auto i : production) log << sym_to_name[i] << " ";
+						for (auto b : production) log << sym_to_name[b] << " ";
 						log << std::endl;
 					}
 			}
@@ -393,6 +398,5 @@ protected:
 	public:
 		BaseSubModule(BaseSyntaxDirected* bsd, const std::string& scope):bsd(*bsd), scope(scope){}
 		virtual void CreateRules(const std::string& out_nonterm) = 0;
-		virtual void DependentOn(BaseSubModule& bsd) {};
 	};
 }

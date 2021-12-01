@@ -9,18 +9,16 @@
 namespace MuCplGen
 {
 	struct FileLoader
-	{
-		static const size_t LINE_LENGTH = 4048;
-		
+	{		
 		MU_NOINLINE
 		static std::vector<LineContent> Load(const std::string& path)
 		{
 			std::vector<LineContent> lineContent;
 			size_t line_no = 1;
 			std::ifstream fs(path);
-			char container[LINE_LENGTH];
-			while (fs.getline(container, LINE_LENGTH))
-				lineContent.push_back({ container, line_no++ });
+			std::string buf;
+			while (std::getline(fs, buf));
+				lineContent.push_back({ std::move(buf), line_no++ });
 			fs.close();
 			return lineContent;
 		}
@@ -32,11 +30,11 @@ namespace MuCplGen
 			std::vector<std::vector<LineContent>> inputs;
 			inputs.push_back(std::vector<LineContent>());
 			std::ifstream fs(path);
-			char container[LINE_LENGTH];
 			size_t line_no = 1;
-			while (fs.getline(container, LINE_LENGTH))
+			std::string buf;
+			while (std::getline(fs, buf))
 			{
-				LineContent line_content = { container,line_no };
+				LineContent line_content = { std::move(buf), line_no };
 				if (line_content.content == separator)
 				{
 					inputs.push_back(std::vector<LineContent>());

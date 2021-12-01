@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -18,11 +18,37 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MuCplGen\CFG.h" />
+    <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
+    <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
+    <ClInclude Include="MuCplGen\DebugTool\DebugToken.h" />
+    <ClInclude Include="MuCplGen\DebugTool\Highlight.h" />
+    <ClInclude Include="MuCplGen\DebugTool\StopWatch.h" />
+    <ClInclude Include="MuCplGen\EasyScanner.h" />
+    <ClInclude Include="MuCplGen\EasyToken.h" />
+    <ClInclude Include="MuCplGen\FileLoader.h" />
+    <ClInclude Include="MuCplGen\FileSystem.h" />
+    <ClInclude Include="MuCplGen\LineContent.h" />
+    <ClInclude Include="MuCplGen\MuCplGen.h" />
+    <ClInclude Include="MuCplGen\MuException.h" />
+    <ClInclude Include="MuCplGen\Parser.h" />
+    <ClInclude Include="MuCplGen\Platform.h" />
+    <ClInclude Include="MuCplGen\PushDownAutomaton.h" />
+    <ClInclude Include="MuCplGen\Scanner.h" />
+    <ClInclude Include="MuCplGen\SealedValue.h" />
+    <ClInclude Include="MuCplGen\SubModules\Sequence.h" />
+    <ClInclude Include="MuCplGen\SyntaxDirected.h" />
+    <ClInclude Include="MuCplGen\Token.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Examples\Sequnce\main.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{A2199731-5B23-43D2-9A34-44C6B5010842}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>myCompiler</RootNamespace>
+    <ProjectGuid>{e657316c-4c30-417b-bfee-f6d1415ee1c7}</ProjectGuid>
+    <RootNamespace>MuCplGen</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -73,20 +99,17 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -97,35 +120,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
-      <AdditionalOptions> /GH /Gh %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(MICROPROFILERDIR)/micro-profiler_$(PlatformName).lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -134,10 +136,21 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -152,39 +165,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="Examples\CalculatorSubModule\Calculator.h" />
-    <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
-    <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
-    <ClInclude Include="MuCplGen\DebugTool\DebugToken.h" />
-    <ClInclude Include="MuCplGen\DebugTool\StopWatch.h" />
-    <ClInclude Include="MuCplGen\DefinitionCompiler.h" />
-    <ClInclude Include="MuCplGen\EasyToken.h" />
-    <ClInclude Include="MuCplGen\FileLoader.h" />
-    <ClInclude Include="MuCplGen\DebugTool\Highlight.h" />
-    <ClInclude Include="MuCplGen\FileSystem.h" />
-    <ClInclude Include="MuCplGen\LineContent.h" />
-    <ClInclude Include="MuCplGen\EasyScanner.h" />
-    <ClInclude Include="MuCplGen\MuCplGen.h" />
-    <ClInclude Include="MuCplGen\CFG.h" />
-    <ClInclude Include="MuCplGen\MuException.h" />
-    <ClInclude Include="MuCplGen\Platform.h" />
-    <ClInclude Include="MuCplGen\Scanner.h" />
-    <ClInclude Include="MuCplGen\SealedValue.h" />
-    <ClInclude Include="MuCplGen\PushDownAutomaton.h" />
-    <ClInclude Include="MuCplGen\Parser.h" />
-    <ClInclude Include="MuCplGen\SyntaxDirected.h" />
-    <ClInclude Include="MuCplGen\Token.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="assignment_test.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="complete_syntax.syn" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Examples\CalculatorSubModule\main.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

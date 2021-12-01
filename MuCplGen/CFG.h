@@ -61,6 +61,7 @@ namespace MuCplGen
         using SemanticAction = std::function<std::any* (std::vector<std::any*>)>;
         std::string head;
         std::vector<std::string> body;
+        std::string fullname_expression;
         
         std::string ScopedName(const std::string& name)
         {
@@ -85,6 +86,15 @@ namespace MuCplGen
         //void PushScope(const std::string& scope) { scopes.push_back(scope); }
         void ParseExpression()
         {
+            if (!head.empty())
+            {
+                std::stringstream ss;
+                ss << head << " ";
+                ss << "-> ";
+                for (auto& b : body) ss << b << " ";
+                expression = ss.str();
+                return;
+            }
             std::stringstream ss(expression);
             std::string buf;
             ss >> buf;
