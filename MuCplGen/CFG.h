@@ -145,7 +145,7 @@ namespace MuCplGen
                     std::stringstream ss;
                     ss << "Unmatched Type!"
                         << "Parser Rule=" << this->action_name << std::endl
-                        << "Production=" << this->expression << std::endl
+                        << "Production=" << this->fullname_expression << std::endl
                         << "Type of income data is <Empty>, your parameter=" << name << std::endl
                         << "Check your Semantic Action parameters!";
                     throw(Exception(ss.str()));
@@ -160,7 +160,7 @@ namespace MuCplGen
             std::stringstream ss;
             ss << "Unmatched Type! Check your Semantic Action of this Parser Rule!" << std::endl
                 << "Parser Rule=" << this->action_name << std::endl
-                << "Production=" << this->expression << std::endl
+                << "Production=" << this->fullname_expression << std::endl
                 << "your para type=" << your_parameter_type_name
                 << " income data type=" << data_type_name;
             throw(Exception(ss.str()));

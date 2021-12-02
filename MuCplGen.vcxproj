@@ -37,12 +37,13 @@
     <ClInclude Include="MuCplGen\PushDownAutomaton.h" />
     <ClInclude Include="MuCplGen\Scanner.h" />
     <ClInclude Include="MuCplGen\SealedValue.h" />
+    <ClInclude Include="MuCplGen\SubModules\Calculator.h" />
     <ClInclude Include="MuCplGen\SubModules\Sequence.h" />
     <ClInclude Include="MuCplGen\SyntaxDirected.h" />
     <ClInclude Include="MuCplGen\Token.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\Sequnce\main.cpp" />
+    <ClCompile Include="Examples\Sequence\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

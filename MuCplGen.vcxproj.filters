@@ -78,9 +78,12 @@
     <ClInclude Include="MuCplGen\Token.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MuCplGen\SubModules\Calculator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\Sequnce\main.cpp">
+    <ClCompile Include="Examples\Sequence\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

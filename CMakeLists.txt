@@ -33,13 +33,15 @@ if(Examples)
         "Examples/CalculatorSubModule/main.cpp"
         "Examples/CalculatorSubModule/Calculator.h"
     )
-
+    add_executable(
+        Sequence
+        "Examples/Sequence/main.cpp"
+    )
     add_executable(
         SolveSemanticError
         "Examples/SolveSemanticError/main.cpp"
         "Examples/SolveSemanticError/Calculator.h"
     )
-
     add_executable(
         ILGenerator
         "Examples/ILGenerator/main.cpp"
@@ -50,6 +52,7 @@ if(Examples)
     if(gpp)
         target_link_libraries(Calculator stdc++fs)
         target_link_libraries(CalculatorSubModule stdc++fs)
+        target_link_libraries(Sequence stdc++fs)
         target_link_libraries(SolveSemanticError stdc++fs)
         target_link_libraries(ILGenerator stdc++fs)
         message("link: stdc++fs")
