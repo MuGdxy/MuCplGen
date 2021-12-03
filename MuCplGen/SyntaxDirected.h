@@ -175,14 +175,17 @@ namespace MuCplGen
 			}
 		}
 
-		void PrintProduction(Sym i)
+		void PrintProduction(Sym i, const Production& p)
 		{
-			for (auto& production : production_table[i])
-			{
-				log << sym_to_name[i] << " -> ";
-				for (auto b : production) log << sym_to_name[b] << " ";
-				log << std::endl;
-			}
+			log << sym_to_name[i] << " -> ";
+			for (auto b : p) log << sym_to_name[b] << " ";
+			log << std::endl;
+		}
+
+
+		void PrintProductions(Sym i)
+		{
+			for (auto& production : production_table[i]) PrintProduction(i, production);
 		}
 
 		MU_NOINLINE void SetupSymbols()
@@ -259,7 +262,7 @@ namespace MuCplGen
 			if (debug_option & DebugOption::ShowProductionTable)
 			{
 				log << "Production Table:" << std::endl;
-				for (size_t i = 0; i < production_table.size(); ++i) PrintProduction(i);
+				for (size_t i = 0; i < production_table.size(); ++i) PrintProductions(i);
 			}
 		}
 
@@ -294,9 +297,23 @@ namespace MuCplGen
 			{
 				build_error = true;
 				SetConsoleColor(ConsoleForegroundColor::Red);
-				log << "CFG Conflict:";
-				PrintProduction(conf.production_index);
-				log << "Sym:" << sym_to_name[conf.sym] << std::endl;
+				log << "CFG Conflict:" << std::endl;
+				log << "Conflict happens when Symbol<";
+				SetConsoleColor(ConsoleForegroundColor::Yellow);
+				log << sym_to_name[conf.sym];
+				SetConsoleColor(ConsoleForegroundColor::Red);
+				log << "> comes" << std::endl;
+				log << "Conflict happens in these productions:" << std::endl;
+				PrintProductions(conf.production_index);
+				for (auto& production : production_table[conf.production_index])
+				{
+					for (auto b : production)
+						if (b == conf.sym)
+							PrintProduction(conf.production_index, production);
+				}
+				log << "Related productions:" << std::endl;
+				PrintProductions(conf.sym);
+				log << "ps: conflict may happen in the node productions"<< std::endl;
 				SetConsoleColor();
 			}
 			if (build_error) throw(Exception("Build Fail! Check conflict info in Log"));
