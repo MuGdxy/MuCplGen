@@ -84,8 +84,7 @@ namespace MuCplGen
 		//std::vector<Sym> expects, size_t token_iter
 		std::function<void(std::vector<Sym>, size_t)> error_action;
 
-		MU_NOINLINE
-			Sym	TokenToTerminator(const Token& token)
+		MU_NOINLINE Sym	TokenToTerminator(const Token& token)
 		{
 			Sym sym = -1;
 			size_t priority = -1;
@@ -109,8 +108,7 @@ namespace MuCplGen
 			else return sym;
 		}
 
-		MU_NOINLINE
-			std::any* SemanticActionDispatcher(std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)
+		MU_NOINLINE std::any* SemanticActionDispatcher(std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)
 		{
 			auto rule = quick_parse_rule_table[nonterm][pro_index];
 			this->token_iter = token_iter;
@@ -136,8 +134,7 @@ namespace MuCplGen
 			}
 		}
 
-		MU_NOINLINE
-			void ErrorReductionActionDispatcher(std::vector<Sym> expects, size_t token_iter)
+		MU_NOINLINE void ErrorReductionActionDispatcher(std::vector<Sym> expects, size_t token_iter)
 		{
 			if (error_action == nullptr)
 			{
@@ -178,8 +175,17 @@ namespace MuCplGen
 			}
 		}
 
-		MU_NOINLINE
-		void SetupSymbols()
+		void PrintProduction(Sym i)
+		{
+			for (auto& production : production_table[i])
+			{
+				log << sym_to_name[i] << " -> ";
+				for (auto b : production) log << sym_to_name[b] << " ";
+				log << std::endl;
+			}
+		}
+
+		MU_NOINLINE void SetupSymbols()
 		{
 			//start = 0 nonterm epsilon term end
 			//terminator
@@ -253,135 +259,143 @@ namespace MuCplGen
 			if (debug_option & DebugOption::ShowProductionTable)
 			{
 				log << "Production Table:" << std::endl;
-				for (size_t i = 0; i < production_table.size(); ++i)
-					for (auto& production : production_table[i])
+				for (size_t i = 0; i < production_table.size(); ++i) PrintProduction(i);
+			}
+		}
+
+		size_t token_iter = 0;
+		TokenSet* token_set = nullptr;
+		std::vector<LineContent>* input_text = nullptr;
+		std::string storage = "";
+		bool build_error = true;
+	public:
+		SyntaxDirected(std::ostream& log = std::cout) : log(log) {}
+
+		MU_NOINLINE void Build()
+		{
+			SetupSymbols();
+			try
+			{
+				if (generation_option == BuildOption::Runtime)
+					my_parser.SetUp(production_table, end - 1, end, epsilon, start);
+				else
+				{
+					if ((int)generation_option & (int)BuildOption::Load && !Load(storage))
 					{
-						log << sym_to_name[i] << " -> ";
-						for (auto b : production) log << sym_to_name[b] << " ";
-						log << std::endl;
+						my_parser.SetUp(production_table, end - 1, end, epsilon, start);
+						if ((int)generation_option & (int)BuildOption::Save) Save(storage);
+					}
+				}
+				my_parser.Reset();
+				my_parser.debug_option = debug_option;
+				build_error = false;
+			}
+			catch (PDABuildConflict conf)
+			{
+				build_error = true;
+				SetConsoleColor(ConsoleForegroundColor::Red);
+				log << "CFG Conflict:";
+				PrintProduction(conf.production_index);
+				log << "Sym:" << sym_to_name[conf.sym] << std::endl;
+				SetConsoleColor();
+			}
+			if (build_error) throw(Exception("Build Fail! Check conflict info in Log"));
+		}
+
+		void Save(const std::string& path) { my_parser.Save(path); }
+
+		bool Load(const std::string& path) { return my_parser.Load(path); }
+
+		bool Parse(std::vector<LineContent>& input_text, TokenSet& token_set)
+		{
+			this->input_text = &input_text;
+			this->token_set = &token_set;
+			if (!production_table.size()) Build();
+			else my_parser.Reset();
+			return my_parser.Parse(token_set,
+				[this](const Token& token) {return TokenToTerminator(token); },
+				[this](std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)
+				{
+					return SemanticActionDispatcher(input, nonterm, pro_index, token_iter);
+				},
+				[this](std::vector<Sym> expects, size_t token_iter)
+				{
+					ErrorReductionActionDispatcher(expects, token_iter);
+				}, log);
+		}
+
+		TokenSet& GetTokenSet() { return *token_set; }
+
+		size_t TokenIter() { return token_iter; }
+
+		Token& CurrentToken() { return (*token_set)[token_iter]; }
+
+		std::vector<LineContent>& GetInputText() { return *input_text; }
+
+		template<class T>
+		T GetErrorData(ParserErrorData* error) { return std::any_cast<T>(error->data); }
+
+		bool HasSemanticError(std::vector<std::any*> input)
+		{
+			auto next = -1;
+			return NextSemanticError(input, next);
+		}
+
+		/*
+		usage:
+		int next = -1;
+		while(true)
+		{ auto data = NextSemanticError(input, next); ... if(!data) break;}
+		*/
+		MU_NOINLINE ParserErrorData* NextSemanticError(std::vector<std::any*> input, int& next)
+		{
+			auto first = next + 1;
+			auto size = input.size();
+			for (int i = first; i < size; ++i)
+			{
+				if (input[i] == nullptr) continue;
+				if (auto p = std::any_cast<ParserErrorData>(input[i]))
+					if (p && p->code == ParserErrorCode::SemanticError)
+					{
+						next = i;
+						return p;
 					}
 			}
+			next = -1;
+			return nullptr;
 		}
 
-	size_t token_iter = 0;
-	TokenSet* token_set = nullptr;
-	std::vector<LineContent>* input_text = nullptr;
-	std::string storage = "";
-public:
-	SyntaxDirected(std::ostream& log = std::cout) : log(log) {}
-
-	MU_NOINLINE
-	void Build()
-	{
-		SetupSymbols();
-		if (generation_option == BuildOption::Runtime) 
-			my_parser.SetUp(production_table, end - 1, end, epsilon, start);
-		else
+		const std::string& GetSymbolName(Sym sym)
 		{
-			if ((int)generation_option & (int)BuildOption::Load && !Load(storage))
-			{
-				my_parser.SetUp(production_table, end - 1, end, epsilon, start);
-				if ((int)generation_option & (int)BuildOption::Save) Save(storage);
-			}
+			return sym_to_name[sym];
 		}
-		my_parser.Reset();
-		my_parser.debug_option = debug_option;
-	}
 
-	void Save(const std::string& path) { my_parser.Save(path); }
-
-	bool Load(const std::string& path) { return my_parser.Load(path); }
-
-	bool Parse(std::vector<LineContent>& input_text, TokenSet& token_set)
-	{
-		this->input_text = &input_text;
-		this->token_set = &token_set;
-		if (!production_table.size()) Build();
-		else my_parser.Reset();
-		return my_parser.Parse(token_set,
-			[this](const Token& token) {return TokenToTerminator(token); },
-			[this](std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)
-			{
-				return SemanticActionDispatcher(input, nonterm, pro_index, token_iter);
-			},
-			[this](std::vector<Sym> expects, size_t token_iter)
-			{
-				ErrorReductionActionDispatcher(expects, token_iter);
-			}, log);
-	}
-
-	TokenSet& GetTokenSet() { return *token_set; }
-
-	size_t TokenIter() { return token_iter; }
-
-	Token& CurrentToken() { return (*token_set)[token_iter]; }
-
-	std::vector<LineContent>& GetInputText() { return *input_text; }
-
-	template<class T>
-	T GetErrorData(ParserErrorData* error) { return std::any_cast<T>(error->data); }
-	
-	bool HasSemanticError(std::vector<std::any*> input)
-	{
-		auto next = -1;
-		return NextSemanticError(input, next);
-	}
-
-	/*
-	usage:
-	int next = -1;
-	while(true) 
-	{ auto data = NextSemanticError(input, next); ... if(!data) break;}
-	*/
-	MU_NOINLINE ParserErrorData* NextSemanticError(std::vector<std::any*> input, int& next)
-	{
-		auto first = next + 1;
-		auto size = input.size();
-		for (int i = first; i < size; ++i)
+		~SyntaxDirected()
 		{
-			if (input[i] == nullptr) continue;
-			if (auto p = std::any_cast<ParserErrorData>(input[i]))
-				if (p && p->code == ParserErrorCode::SemanticError)
-				{
-					next = i;
-					return p;
-				}
+			for (auto rule : terminator_rules) delete rule;
 		}
-		next = -1;
-		return nullptr;
-	}
-
-	const std::string& GetSymbolName(Sym sym)
-	{
-		return sym_to_name[sym];
-	}
-
-	~SyntaxDirected()
-	{
-		for (auto rule : terminator_rules) delete rule;
-	}
 
 #pragma region For Custom Code 
-protected:
-	BuildOption generation_option = BuildOption::Runtime;
+	protected:
+		BuildOption generation_option = BuildOption::Runtime;
 
-	void SetStorage(const std::string& storage) { this->storage = storage; }
+		void SetStorage(const std::string& storage) { this->storage = storage; }
 
-	Term& CreateTerminator()
-	{
-		auto tmp = new Term;
-		terminator_rules.push_back(tmp);
-		return *tmp;
-	};
+		Term& CreateTerminator()
+		{
+			auto tmp = new Term;
+			terminator_rules.push_back(tmp);
+			return *tmp;
+		};
 
-	void AddParseErrorAction(std::function<void(std::vector<Sym> expects, size_t token_iter)> action)
-	{
-		error_action = action;
-	}
+		void AddParseErrorAction(std::function<void(std::vector<Sym> expects, size_t token_iter)> action)
+		{
+			error_action = action;
+		}
 
-	size_t debug_option = 0;
+		size_t debug_option = 0;
 #pragma endregion
-};
+	};
 
 	class BaseSubModule
 	{
@@ -395,7 +409,7 @@ protected:
 			return tmp;
 		}
 	public:
-		BaseSubModule(BaseSyntaxDirected* bsd, const std::string& scope):bsd(*bsd), scope(scope){}
+		BaseSubModule(BaseSyntaxDirected* bsd, const std::string& scope) :bsd(*bsd), scope(scope) {}
 		virtual void CreateRules(const std::string& out_nonterm) = 0;
 	};
 }

@@ -105,16 +105,31 @@ public:
 			//Action: Finish variable
 		}
 
+		//{
+		//	auto& p = CreateParseRule();
+		//	p.expression = "Stnc -> VecDef = Vec ;";
+		//	//Action: Finish variable
+		//}
+
+		//{
+		//	auto& p = CreateParseRule();
+		//	p.expression = "Stnc -> BaseDef = Base ;";
+		//	//Action: Finish variable
+		//}
+
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Stnc -> VecDef = Vec ;";
-			//Action: Finish variable
+			p.expression = "Stnc -> Def ;";
 		}
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Stnc -> BaseDef = Base ;";
-			//Action: Finish variable
+			p.expression = "Def -> BaseDef";
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.expression = "Def -> VecDef";
 		}
 
 		{

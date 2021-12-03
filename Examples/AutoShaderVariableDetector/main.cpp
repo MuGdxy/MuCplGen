@@ -8,7 +8,7 @@ int main()
 	VariableReader reader;
 	reader.Build();
 
-	auto lines = FileLoader::Load("./auto.shader");
+	auto lines = FileLoader::Load("./Auto.shader");
 	std::vector<EasyToken> tokens = easyScanner.Scann(lines);
 	reader.Parse(lines, tokens);
 	Highlight(lines, tokens);

@@ -43,6 +43,11 @@ if(Examples)
         "Examples/SolveSemanticError/Calculator.h"
     )
     add_executable(
+        AutoShaderVariableDetector
+        "Examples/AutoShaderVariableDetector/main.cpp"
+        "Examples/AutoShaderVariableDetector/VariableReader.h"
+    )
+    add_executable(
         ILGenerator
         "Examples/ILGenerator/main.cpp"
         "Examples/ILGenerator/ILSymbolTable.cpp"
@@ -58,6 +63,7 @@ if(Examples)
         message("link: stdc++fs")
     endif()
     file(COPY "${PROJECT_SOURCE_DIR}/assignment_test.txt" DESTINATION ${PROJECT_BINARY_DIR})
+    file(COPY "${PROJECT_SOURCE_DIR}/Auto.shader" DESTINATION ${PROJECT_BINARY_DIR})
 endif(Examples)
 
 include_directories(${PROJECT_SOURCE_DIR})
