@@ -81,9 +81,12 @@
     <ClInclude Include="MuCplGen\SubModules\Calculator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Examples\AutoShaderVariableDetector\VariableReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\Sequence\main.cpp">
+    <ClCompile Include="Examples\AutoShaderVariableDetector\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

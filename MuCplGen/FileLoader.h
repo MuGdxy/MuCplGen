@@ -17,7 +17,7 @@ namespace MuCplGen
 			size_t line_no = 1;
 			std::ifstream fs(path);
 			std::string buf;
-			while (std::getline(fs, buf));
+			while (std::getline(fs, buf))
 				lineContent.push_back({ std::move(buf), line_no++ });
 			fs.close();
 			return lineContent;

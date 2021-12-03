@@ -80,6 +80,7 @@ namespace MuCplGen
 			size_t iter = 0;
 			bool on = true;
 			bool acc = false;
+			T input_term = transfer_func(token_set[iter]);
 			while (on)
 			{
 				if (iter >= token_set.size())
@@ -88,7 +89,6 @@ namespace MuCplGen
 						log << "tokens run out without an EndToken" << std::endl;
 					break;
 				}
-				T input_term = transfer_func(token_set[iter]);
 				if (state_stack.size() == 0) throw Exception("Check if you call Build() in your constructor.");
 				auto action_iter = action_table.find({ state_stack.top(),input_term });
 				if (action_table.find({ state_stack.top(),input_term }) != action_table.end())
@@ -101,6 +101,7 @@ namespace MuCplGen
 						semantic_stack.push(nullptr);
 						top_token_iter = iter;
 						++iter;
+						input_term = transfer_func(token_set[iter]);
 						if (debug_option & DebugOption::ParserDetail)
 							log << "move_in state:" << action.aim_state << " term: " << action.sym << std::endl;
 						break;

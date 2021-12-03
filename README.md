@@ -14,10 +14,10 @@
     	</td>
     </tr>
 </table>
-
 <img src = "README.assets/preview.png">
 
 [frequent-update-repo](https://revdolgaming.coding.net/public/musys/MuCompilerGenerator/git/files).
+
 ```shell
 git clone https://e.coding.net/revdolgaming/musys/MuCompilerGenerator.git
 ```
@@ -1014,7 +1014,58 @@ public:
 
 if load fails, the **Parser** roll back to the runtime mode, rebuild the **PDA** from your **CFG**.
 
+# More Example
 
+```cpp
+Prgm -> Stmt.Vec
+Stmt.Vec -> Stmt.Comps
+Stmt.Sep -> epsilon
+Stmt.Comps -> Stmt.Comps Stmt.Sep Stmt.Comp
+Stmt.Comps -> Stmt.Comp
+Stmt.Comp -> Stnc
+Stnc -> VecDef ;
+Stnc -> BaseDef ;
+Stnc -> VecDef = Vec ;
+Stnc -> BaseDef = Base ;
+VecDef -> VecType Name
+VecDef -> VecType < Loc > Name
+BaseDef -> BaseType Name
+BaseDef -> BaseType < Loc > Name
+Name -> Id
+Loc -> Cal.Expr
+Vec -> NumVec
+Vec -> StrVec
+Base -> Str
+Base -> Cal.Expr
+Base -> true
+Base -> false
+NumVec -> ( NumVec.Vec )
+StrVec -> ( StrVec.Vec )
+StrVec.Vec -> StrVec.Comps
+StrVec.Sep -> ,
+StrVec.Comps -> StrVec.Comps StrVec.Sep StrVec.Comp
+StrVec.Comps -> StrVec.Comp
+StrVec.Comp -> Str
+NumVec.Vec -> NumVec.Comps
+NumVec.Sep -> ,
+NumVec.Comps -> NumVec.Comps NumVec.Sep NumVec.Comp
+NumVec.Comps -> NumVec.Comp
+NumVec.Comp -> Cal.Expr
+Cal.Expr -> Cal.E
+Cal.F -> Cal.Num
+Cal.F -> ( Cal.E )
+Cal.P -> Cal.F
+Cal.P -> Cal.P ^ Cal.F
+Cal.T -> Cal.P
+Cal.T -> Cal.T * Cal.P
+Cal.T -> Cal.T / Cal.P
+Cal.E -> Cal.T
+Cal.E -> Cal.E + Cal.T
+Cal.E -> Cal.E - Cal.T
+Cal.Num -> Num
+```
+
+![image-20211203192542893](README.assets/image-20211203192542893.png)
 
 # Appendix
 

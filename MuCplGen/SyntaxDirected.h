@@ -224,8 +224,7 @@ namespace MuCplGen
 							t.name = body;
 							t.translation = [&t](const Token& token)
 							{
-								if (t.name == token.name) return true;
-								else return false;
+								return t.name == token.name;
 							};
 							t.sym = sym;
 						}

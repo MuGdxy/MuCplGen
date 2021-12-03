@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Examples\AutoShaderVariableDetector\VariableReader.h" />
     <ClInclude Include="MuCplGen\CFG.h" />
     <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
@@ -43,7 +44,7 @@
     <ClInclude Include="MuCplGen\Token.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\Sequence\main.cpp" />
+    <ClCompile Include="Examples\AutoShaderVariableDetector\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -144,6 +145,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
