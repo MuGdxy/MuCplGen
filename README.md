@@ -24,6 +24,8 @@ git clone https://e.coding.net/revdolgaming/musys/MuCompilerGenerator.git
 
 Author: lxy819469559@gmail.com
 
+This ReadMe is edited by [typora](https://typora.io/), if there's any display problem, download it and open it with typora.
+
 ## Introduction
 
 **MuCompilerGenerator(MuCplGen)** is a Header-Only dynamic compiler generator based on C++ 17.
@@ -159,7 +161,7 @@ class Calculator :public SyntaxDirected<SLRParser<EasyToken>>
 };
 ```
 
-### Define the Semanitc Action
+### Define the Semantic Action
 
 Once a production happen, the Semantic Action attaching on it will involke.
 
@@ -318,7 +320,7 @@ So do the rest rules.
 
 
 
-Finially never forget the `Expr -> E`, this is the entrance of all productions, we need to set this rule as the first rule, although it does nothing at all.
+Finally never forget the `Expr -> E`, this is the entrance of all productions, we need to set this rule as the first rule, although it does nothing at all.
 
 ```cpp
 {
@@ -403,7 +405,7 @@ Run again.
 
 ![image-20211121175018648](README.assets/image-20211121175018648.png)
 
-It works pretty well. There are quite a lot of Debug Info MuCplGen can provide, please set the `debug_options` to test the debug info by yourself.
+It works pretty well. There are quite a lot of Debug Info **MuCplGen** can provide, please set the `debug_options` to test the debug info by yourself.
 
 ### Further
 
@@ -710,7 +712,7 @@ check your log.
 
 ![image-20211204142324469](README.assets/image-20211204142324469.png)
 
-it says, when $\epsilon$ comes, conflict may happen in `S->F G`, and the error production is `F-> epsilon`，the main problem is, the **PDA** has no idea which rule to obey when it read a `(` terminator as input.
+it says, when $\epsilon$ comes, conflict may happen in `S->F G`, and the error production is `F-> epsilon`，the main problem is, the **PDA** has no idea which rule to obey when it reads a `(` terminator as input.
 
 - view: [Examples/PDAConflict](./Examples/PDAConflict)
 
