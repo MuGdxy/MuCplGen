@@ -23,9 +23,7 @@ public:
 			| DebugOption::ShowReductionProcess;
 
 		{
-			//translate number token as terminator Num
-			auto& t = CreateTerminator();
-			t.name = "Num";
+			auto& t = CreateTerminator("num");
 			t.translation = [this](const Token& token)
 			{
 				return token.type == Token::TokenType::number;
@@ -33,9 +31,7 @@ public:
 		}
 
 		{
-			//translate number token as terminator Num
-			auto& t = CreateTerminator();
-			t.name = "Str";
+			auto& t = CreateTerminator("str");
 			t.translation = [this](const Token& token)
 			{
 				return token.type == Token::TokenType::raw_string;
@@ -43,9 +39,7 @@ public:
 		}
 
 		{
-			//translate number token as terminator Num
-			auto& t = CreateTerminator();
-			t.name = "VecType";
+			auto& t = CreateTerminator("vecType");
 			t.translation = [this](const Token& token)
 			{
 				return token.type == Token::TokenType::keyword 
@@ -56,9 +50,7 @@ public:
 		}
 
 		{
-			//translate number token as terminator Num
-			auto& t = CreateTerminator();
-			t.name = "BaseType";
+			auto& t = CreateTerminator("baseType");
 			t.priority = 1;
 			t.translation = [this](const Token& token)
 			{
@@ -67,9 +59,7 @@ public:
 		}
 
 		{
-			//translate number token as terminator Num
-			auto& t = CreateTerminator();
-			t.name = "Id";
+			auto& t = CreateTerminator("id");
 			t.priority = 1;
 			t.translation = [this](const Token& token)
 			{
@@ -81,7 +71,7 @@ public:
 
 		//Entrance:
 		{
-			auto& p = CreateParseRule();
+			auto& p = CreateParseEntrance();
 			p.expression = "Prgm -> Stmt.Vec";
 		}
 
@@ -105,56 +95,41 @@ public:
 			//Action: Finish variable
 		}
 
-		//{
-		//	auto& p = CreateParseRule();
-		//	p.expression = "Stnc -> VecDef = Vec ;";
-		//	//Action: Finish variable
-		//}
-
-		//{
-		//	auto& p = CreateParseRule();
-		//	p.expression = "Stnc -> BaseDef = Base ;";
-		//	//Action: Finish variable
-		//}
-
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Stnc -> Def ;";
+			p.expression = "Stnc -> VecDef = Vec ;";
+			//Action: Finish variable
 		}
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Def -> BaseDef";
+			p.expression = "Stnc -> BaseDef = Base ;";
+			//Action: Finish variable
 		}
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Def -> VecDef";
+			p.expression = "VecDef -> vecType Name";
 		}
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "VecDef -> VecType Name";
+			p.expression = "VecDef -> vecType < Loc > Name";
 		}
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "VecDef -> VecType < Loc > Name";
+			p.expression = "BaseDef -> baseType Name";
 		}
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "BaseDef -> BaseType Name";
+			p.expression = "BaseDef -> baseType < Loc > Name";
 		}
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "BaseDef -> BaseType < Loc > Name";
-		}
-
-		{
-			auto& p = CreateParseRule();
-			p.expression = "Name -> Id";
+			p.expression = "Name -> id";
 			//Action: Set AutoVariable' name
 		}
 
@@ -175,7 +150,7 @@ public:
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Base -> Str";
+			p.expression = "Base -> str";
 		}
 
 		{
@@ -232,7 +207,7 @@ public:
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "StrVec.Comp -> Str";
+			p.expression = "StrVec.Comp -> str";
 			p.SetAction<std::string, Empty>(
 				[this](Empty)->std::string
 				{
@@ -253,7 +228,7 @@ public:
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Cal.Num -> Num";
+			p.expression = "Cal.Num -> num";
 			p.SetAction<float, Empty>(
 				[this](Empty)->float
 				{

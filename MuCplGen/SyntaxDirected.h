@@ -44,6 +44,14 @@ namespace MuCplGen
 			return *tmp;
 		}
 
+		ParseRule& CreateParseEntrance()
+		{
+			auto tmp = new ParseRule;
+			tmp->scope = current_scope;
+			parse_rules.push_front(tmp);
+			return *tmp;
+		}
+
 		~BaseSyntaxDirected()
 		{
 			for (auto rule : parse_rules) delete rule;
@@ -79,7 +87,8 @@ namespace MuCplGen
 		using SemanticAction = std::function<std::any* (std::vector<std::any*>, size_t, TokenSet&)>;
 	private:
 		std::ostream& log;
-		std::vector<Term*> terminator_rules;
+		std::list<Term*> terminator_rules;
+		std::list<Term*> wild_terminators;
 		std::vector<std::vector<ParseRule*>> quick_parse_rule_table;
 		//std::vector<Sym> expects, size_t token_iter
 		std::function<void(std::vector<Sym>, size_t)> error_action;
@@ -188,10 +197,25 @@ namespace MuCplGen
 			for (auto& production : production_table[i]) PrintProduction(i, production);
 		}
 
+		void PrintUpperRelativeProductions(Sym s)
+		{
+			for (size_t i = 0; i < production_table.size(); ++i)
+				for (auto& p : production_table[i])
+					for (auto sym : p)
+					{
+						if (sym == s)
+						{
+							PrintProduction(i, p);
+							break;
+						}
+					}
+		}
+
 		MU_NOINLINE void SetupSymbols()
 		{
 			//start = 0 nonterm epsilon term end
 			//terminator
+			
 			for (auto& rule : parse_rules)
 			{
 				rule->ParseExpression();
@@ -229,8 +253,7 @@ namespace MuCplGen
 							sym_to_name.push_back(body);
 							production.push_back(sym);
 
-							auto& t = CreateTerminator();
-							t.name = body;
+							auto& t = CreateWildTerminator(body);
 							t.translation = [&t](const Token& token)
 							{
 								return t.name == token.name;
@@ -264,6 +287,19 @@ namespace MuCplGen
 				log << "Production Table:" << std::endl;
 				for (size_t i = 0; i < production_table.size(); ++i) PrintProductions(i);
 			}
+			if (debug_option & DebugOption::ShowCatchedWildTerminator)
+			{
+				log << "Wild Terminators:" << std::endl;
+				for (auto t : wild_terminators) log << t->name << std::endl;
+			}
+			if (production_table[0].size() > 1)
+			{
+				SetConsoleColor(log, ConsoleForegroundColor::Red);
+				log << "Parse Entrance allow only one production, yours:" << std::endl;
+				PrintProductions(0);
+				SetConsoleColor(log);
+				throw(Exception("Parse Entrance Rule is illegal! Check your log to get error info"));
+			}
 		}
 
 		size_t token_iter = 0;
@@ -271,6 +307,14 @@ namespace MuCplGen
 		std::vector<LineContent>* input_text = nullptr;
 		std::string storage = "";
 		bool build_error = true;
+		Term& CreateWildTerminator(const std::string& name)
+		{
+			auto tmp = new Term;
+			tmp->name = name;
+			terminator_rules.push_back(tmp);
+			wild_terminators.push_back(tmp);
+			return *tmp;
+		};
 	public:
 		SyntaxDirected(std::ostream& log = std::cout) : log(log) {}
 
@@ -288,6 +332,11 @@ namespace MuCplGen
 						my_parser.SetUp(production_table, end - 1, end, epsilon, start);
 						if ((int)generation_option & (int)BuildOption::Save) Save(storage);
 					}
+					else if (generation_option == BuildOption::Save)
+					{
+						my_parser.SetUp(production_table, end - 1, end, epsilon, start);
+						Save(storage);
+					}
 				}
 				my_parser.Reset();
 				my_parser.debug_option = debug_option;
@@ -296,25 +345,41 @@ namespace MuCplGen
 			catch (PDABuildConflict conf)
 			{
 				build_error = true;
-				SetConsoleColor(ConsoleForegroundColor::Red);
+				SetConsoleColor(log, ConsoleForegroundColor::Red);
 				log << "CFG Conflict:" << std::endl;
-				log << "Conflict happens when Symbol<";
-				SetConsoleColor(ConsoleForegroundColor::Yellow);
-				log << sym_to_name[conf.sym];
-				SetConsoleColor(ConsoleForegroundColor::Red);
-				log << "> comes" << std::endl;
-				log << "Conflict happens in these productions:" << std::endl;
-				PrintProductions(conf.production_index);
-				for (auto& production : production_table[conf.production_index])
+				if (conf.sym != -1)
 				{
-					for (auto b : production)
-						if (b == conf.sym)
-							PrintProduction(conf.production_index, production);
+					log << "Conflict happens when Symbol<";
+					SetConsoleColor(log, ConsoleForegroundColor::Yellow);
+					log << sym_to_name[conf.sym];
+					SetConsoleColor(log, ConsoleForegroundColor::Red);
+					log << "> comes" << std::endl;
 				}
-				log << "Related productions:" << std::endl;
-				PrintProductions(conf.sym);
+
+				log << "Related production:" << std::endl;
+				if (conf.head != -1)
+				{
+					PrintProduction(conf.head, production_table[conf.head][conf.production_index]);
+					PrintUpperRelativeProductions(conf.head);
+				}
+
+				if (conf.sym_production_index != -1)
+				{
+					PrintProduction(conf.sym, production_table[conf.sym][conf.sym_production_index]);
+					PrintUpperRelativeProductions(conf.sym);
+				}
+
+				if (conf.follow != -1)
+				{
+					log << "Follower Conflict:" << std::endl;
+					log << "terminator<";
+					SetConsoleColor(log, ConsoleForegroundColor::Yellow);
+					log << sym_to_name[conf.follow];
+					SetConsoleColor(log, ConsoleForegroundColor::Red);
+					log << ">" << std::endl;
+				}
 				log << "ps: conflict may happen in the node productions"<< std::endl;
-				SetConsoleColor();
+				SetConsoleColor(log);
 			}
 			if (build_error) throw(Exception("Build Fail! Check conflict info in Log"));
 		}
@@ -398,14 +463,20 @@ namespace MuCplGen
 
 		void SetStorage(const std::string& storage) { this->storage = storage; }
 
-		Term& CreateTerminator()
+		Term& CreateTerminator(const std::string& name)
 		{
 			auto tmp = new Term;
+			tmp->name = name;
+			if (name[0] >= 'A' && name[0] <= 'Z') 
+				throw(Exception(
+					"Terminator should be named in Lower Camel Case, "
+					"e.g. 'num' instead of 'Num' "
+				));
 			terminator_rules.push_back(tmp);
 			return *tmp;
 		};
 
-		void AddParseErrorAction(std::function<void(std::vector<Sym> expects, size_t token_iter)> action)
+		void AddParseErrorAction(std::function<void(std::vector<Sym>, size_t)> action)
 		{
 			error_action = action;
 		}

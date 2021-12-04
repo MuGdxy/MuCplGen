@@ -29,6 +29,10 @@ if(Examples)
         "Examples/Calculator/Calculator.h"
     )
     add_executable(
+        PDAConflict
+        "Examples/PDAConflict/main.cpp"
+    )
+    add_executable(
         CalculatorSubModule
         "Examples/CalculatorSubModule/main.cpp"
         "Examples/CalculatorSubModule/Calculator.h"
@@ -56,9 +60,11 @@ if(Examples)
 
     if(gpp)
         target_link_libraries(Calculator stdc++fs)
+        target_link_libraries(PDAConflict stdc++fs)
         target_link_libraries(CalculatorSubModule stdc++fs)
         target_link_libraries(Sequence stdc++fs)
         target_link_libraries(SolveSemanticError stdc++fs)
+        target_link_libraries(AutoShaderVariableDetector stdc++fs)
         target_link_libraries(ILGenerator stdc++fs)
         message("link: stdc++fs")
     endif()

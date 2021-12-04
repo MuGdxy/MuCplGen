@@ -18,8 +18,7 @@ public:
 		//bTy->keyword && "bool";
 		//bTy->keyword && "int";
 		{
-			auto& t = CreateTerminator();
-			t.name = "bTy";
+			auto& t = CreateTerminator("bTy");
 			t.translation = [this](const Token& token)
 			{
 				if (token.type == Token::TokenType::keyword)
@@ -36,8 +35,7 @@ public:
 		//record->keyword && "struct";
 		//record->keyword && "class";
 		{
-			auto& t = CreateTerminator();
-			t.name = "record";
+			auto& t = CreateTerminator("record");
 			t.translation = [this](const Token& token)
 			{
 				if (token.type == Token::TokenType::keyword)
@@ -50,61 +48,50 @@ public:
 		}
 		//str->raw_string;
 		{
-			auto& t = CreateTerminator();
-			t.name = "str";
+			auto& t = CreateTerminator("str");
 			t.translation = [this](const Token& token)
 			{
-				if (token.type == Token::TokenType::raw_string) return true;
-				else return false;
+				return token.type == Token::TokenType::raw_string;
 			};
 		}
 
 		//num->number;
 		{
-			auto& t = CreateTerminator();
-			t.name = "num";
+			auto& t = CreateTerminator("num");
 			t.translation = [this](const Token& token)
 			{
-				if (token.type == Token::TokenType::number) return true;
-				else return false;
+				return token.type == Token::TokenType::number;
 			};
 		}
 
 		//id->identifier;
 		{
-			auto& t = CreateTerminator();
-			t.name = "id";
+			auto& t = CreateTerminator("id");
 			t.translation = [this](const Token& token)
 			{
-				if (token.type == Token::TokenType::identifier) return true;
-				else return false;
+				return token.type == Token::TokenType::identifier;
 			};
 		}
 		//cTy->custom_type;
 		{
-			auto& t = CreateTerminator();
-			t.name = "cTy";
+			auto& t = CreateTerminator("cTy");
 			t.translation = [this](const Token& token)
 			{
-				if (token.type == Token::TokenType::custom_type) return true;
-				else return false;
+				return token.type == Token::TokenType::custom_type;
 			};
 		}
 		//rel->rel_op;
 		{
-			auto& t = CreateTerminator();
-			t.name = "rel";
+			auto& t = CreateTerminator("rel");
 			t.translation = [this](const Token& token)
 			{
-				if (token.type == Token::TokenType::rel_op) return true;
-				else return false;
+				return token.type == Token::TokenType::rel_op;
 			};
 		}
 		//bl->keyword && "true";
 		//bl->keyword && "false";
 		{
-			auto& t = CreateTerminator();
-			t.name = "bl";
+			auto& t = CreateTerminator("bl");
 			t.translation = [this](const Token& token)
 			{
 				if (token.type == Token::TokenType::keyword)
@@ -120,7 +107,7 @@ public:
 
 		//	Prgm_ -> Prgm
 		{
-			auto& p = CreateParseRule();
+			auto& p = CreateParseEntrance();
 			p.expression = "Prgm_ -> Prgm";
 		}
 
@@ -278,7 +265,7 @@ public:
 				{
 					auto& token_set = GetTokenSet();
 					auto iter = TokenIter();
-					for (size_t i = iter + 1; i < token_set.size(); ++i)
+					for (size_t i = iter; i < token_set.size(); ++i)
 						if (token_set[i].name == entry->token->name)
 						{
 							token_set[i].Type("custom_type");
@@ -302,6 +289,8 @@ public:
 					auto entry = Env.CreateILEntry();
 					entry->meta_type = type_token->name;
 					entry->token = token;
+					token->type = EasyToken::TokenType::custom_type;
+					token->color = ConsoleForegroundColor::Cyan;
 					Env.AddSubEntryToCurrent(entry);
 					//head of type_table doesn't care about offset 
 					entry->offset = 0;

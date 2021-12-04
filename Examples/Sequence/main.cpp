@@ -17,9 +17,8 @@ public:
 		debug_option = DebugOption::ConciseInfo | DebugOption::ShowProductionTable | DebugOption::ShowReductionProcess;
 
 		{
-			//translate number token as terminator Num
-			auto& t = CreateTerminator();
-			t.name = "Num";
+			//translate number token as terminator "num"
+			auto& t = CreateTerminator("num");
 			t.translation = [this](const Token& token)
 			{
 				return token.type == Token::TokenType::number;
@@ -27,9 +26,7 @@ public:
 		}
 
 		{
-			//translate number token as terminator Num
-			auto& t = CreateTerminator();
-			t.name = "Str";
+			auto& t = CreateTerminator("str");
 			t.translation = [this](const Token& token)
 			{
 				return token.type == Token::TokenType::raw_string;
@@ -90,7 +87,7 @@ public:
 		
 		{
 			auto& p = CreateParseRule();
-			p.expression = "StrVec.Comp -> Str";
+			p.expression = "StrVec.Comp -> str";
 			p.SetAction<std::string, Empty>(
 				[this](Empty)->std::string
 				{
@@ -110,7 +107,7 @@ public:
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Cal.Num -> Num";
+			p.expression = "Cal.Num -> num";
 			p.SetAction<float, Empty>(
 				[this](Empty)->float
 				{

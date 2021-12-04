@@ -8,7 +8,7 @@ namespace MuCplGen::Debug
 		SyntaxFileProcessStage = 1 << 1,
 		ShowProductionTable = 1 << 2,
 		ShowCatchedVariables = 1 << 3,
-		SyntaxFileCatchedCandidates = 1 << 4,
+		ShowCatchedWildTerminator = 1 << 4,
 		SyntaxFileSemanticCheck = 1 << 5,
 		ShowReductionProcess = 1 << 6,
 		
@@ -17,7 +17,7 @@ namespace MuCplGen::Debug
 		SyntaxError = 1 << 9,
 
 		AllDebugInfo = HighlightSyntaxFile | SyntaxFileProcessStage | ShowProductionTable
-		| ShowCatchedVariables | SyntaxFileCatchedCandidates | SyntaxFileSemanticCheck
+		| ShowCatchedVariables | ShowCatchedWildTerminator | SyntaxFileSemanticCheck
 		| ShowReductionProcess | ParserDetail | ParserError | SyntaxError,
 
 		ConciseInfo = SyntaxFileProcessStage | ParserError | SyntaxError

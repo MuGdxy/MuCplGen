@@ -101,7 +101,7 @@ For convinience, this time, we read the console as input.
 - relation operator
 - ...
 
-we just ask `EasyScanner` to recoginze number and arithmetic operator for us.
+we just ask `EasyScanner` to recognize number and arithmetic operator for us.
 
 ```cpp
 int main()
@@ -175,9 +175,9 @@ public:
 	Calculator(std::ostream& log = std::cout) : SyntaxDirected(log)
 	{
 		{
-			//translate number token as terminator Num
-			auto& t = CreateTerminator();
-			t.name = "Num";
+			//translate number token as terminator "num"
+            //note that, MuCplGen force a terminator to be in Lower Camel Case
+			auto& t = CreateTerminator("num");
 			t.translation = [this](const Token& token)
 			{
 				return token.type == Token::TokenType::number;
@@ -193,7 +193,7 @@ and then, we define the first Semantic Action right after the terminator definit
 ```cpp
 {
     auto& p = CreateParseRule();
-    p.expression = "F -> Num";
+    p.expression = "F -> num";
     //first template parameter is the return type, and others are input parameters
     p.SetAction<float, Empty>(
         [this](Empty)->float
@@ -204,9 +204,9 @@ and then, we define the first Semantic Action right after the terminator definit
 }
 ```
 
-here, when `F -> Num` happens, we take the current token, and we know it should be a number, so we just convert it from string to float, and pass it on. Thus any CFG rule who has an `F` in its **Body** can get this float data from the `F`.
+here, when `F -> num` happens, we take the current token, and we know it should be a number, so we just convert it from string to float, and pass it on. Thus any CFG rule who has an `F` in its **Body** can get this float data from the `F`.
 
-Notice that, we places an `Empty` as the parameter, we need it to save a place for those who doesn't pass any data. In this case, the `Num` doesn't take any data, so we place `Empty` for it.
+Notice that, we places an `Empty` as the parameter, we need it to save a place for those who doesn't pass any data. In this case, the `num` doesn't take any data, so we place `Empty` for it.
 
 
 
@@ -322,9 +322,8 @@ Finially never forget the `Expr -> E`, this is the entrance of all productions, 
 
 ```cpp
 {
-    //translate number token as terminator Num
-    auto& t = CreateTerminator();
-    t.name = "Num";
+    //translate number token as terminator "num"
+    auto& t = CreateTerminator("num");
     t.translation = [this](const Token& token)
     {
         return token.type == Token::TokenType::number;
@@ -412,8 +411,9 @@ In the following content, we are going into more details about how MuCplGen work
 
 - if you want to create a Scanner by yourself please check the Chapter [Scanner](#Scanner).
 - if you need more info about Parser, please check the Chapter [Syntax-Directed Parser](#Syntax-Directed Parser)
-  - using SubModule
-  - throw Semantic Error
+  - using [SubModule](#SubModule)
+  - throw [Semantic Error](#Solve Semantic Error)
+  - deal with [CFG Conflict](#CFG Conflict)
 
 
 ## Scanner
@@ -628,6 +628,92 @@ Context Free Grammar (CFG) based.
 | LR1        | `LR1Parser<UserToken,T>` | :heavy_check_mark: |
 | BaseParser |                          | :x:                |
 
+### CFG Conflict
+
+Here we take in an easy example to introduce the CFG Conflict.
+
+```cpp
+S_ -> S
+S -> F G
+S -> G
+G -> ( num )
+F -> epsilon
+```
+
+Here, `epsilon` means  $\epsilon$ (the notation for empty terminator), e.g. $1001 \epsilon 1002 \rarr 10011002 $ 
+
+It's obvious that, there is a conflict between `S->G` and `S->F G`, **PDA** has no idea which to obey, cuz `S->G` and `S->F G` is intrinsically same, they are both `( num )`.
+
+We code as follows.
+
+```cpp
+#include <MuCplGen/MuCplGen.h>
+using namespace MuCplGen;
+
+class Reader : public SyntaxDirected<SLRParser<EasyToken>>
+{
+public:
+	Reader(std::ostream& log = std::cout)
+		: SyntaxDirected(log)
+	{
+		debug_option = DebugOption::ConciseInfo | DebugOption::ShowProductionTable | DebugOption::ShowReductionProcess;
+
+		{
+			//translate number token as terminator "num"
+			auto& t = CreateTerminator("num");
+			t.translation = [this](const Token& token)
+			{
+				return token.type == Token::TokenType::number;
+			};
+		}
+
+		//Entrance:
+		{
+			auto& p = CreateParseEntrance();
+			p.expression = "S_ -> S";
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.expression = "S -> F G";
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.expression = "S -> G";
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.expression = "G -> ( num )";
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.expression = "F -> epsilon";
+		}
+	}
+};
+
+int main()
+{
+	Reader reader;
+	reader.Build();
+}
+```
+
+Run:
+
+![image-20211204142258579](README.assets/image-20211204142258579.png)
+
+check your log.
+
+![image-20211204142324469](README.assets/image-20211204142324469.png)
+
+it says, when $\epsilon$ comes, conflict may happen in `S->F G`, and the error production is `F-> epsilon`，the main problem is, the **PDA** has no idea which rule to obey when it read a `(` terminator as input.
+
+- view: [Examples/PDAConflict](./Examples/PDAConflict)
+
 ### SubModule
 
 in this chapter we introduce **SubModule**. 
@@ -797,9 +883,8 @@ public:
 		generation_option = BuildOption::Runtime;
 		
 		{
-			//translate number token as terminator Num
-			auto& t = CreateTerminator();
-			t.name = "Num";
+			//translate number token as terminator "num"
+			auto& t = CreateTerminator("num");
 			t.translation = [this](const Token& token)
 			{
 				return token.type == Token::TokenType::number;
@@ -828,7 +913,7 @@ public:
             //to fill the requirement of CalculatorSubModule
             //we need to pass a float data to <scope>.Num(a non-term in CalculatorSubModule)
             //this time <scope> = CalSub
-			p.expression = "CalSub.Num -> Num";
+			p.expression = "CalSub.Num -> num";
 			p.SetAction<float, Empty>(
 				[this](Empty)->float
 				{
@@ -882,7 +967,7 @@ If you have any problem, please check [Examples/CalculatorSubModule](./Examples/
 
 ### Solve Semantic Error
 
-This time, we are going to talk about how to passon semantic error infomation.
+This time, we are going to talk about how to passon semantic error information.
 
 We implement a cool calculator in [Quick Start](#Quick Start), recall:
 
@@ -1016,6 +1101,12 @@ if load fails, the **Parser** roll back to the runtime mode, rebuild the **PDA**
 
 # More Example
 
+### Variable Detector
+
+![image-20211203192542893](README.assets/image-20211203192542893.png)
+
+CFG:
+
 ```cpp
 Prgm -> Stmt.Vec
 Stmt.Vec -> Stmt.Comps
@@ -1065,7 +1156,7 @@ Cal.E -> Cal.E - Cal.T
 Cal.Num -> Num
 ```
 
-![image-20211203192542893](README.assets/image-20211203192542893.png)
+- view: [Examples/AutoShaderVariableDetector](./Examples/AutoShaderVariableDetector)
 
 # Appendix
 

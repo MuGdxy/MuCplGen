@@ -12,9 +12,8 @@ public:
 		generation_option = BuildOption::Runtime;
 
 		{
-			//translate number token as terminator Num
-			auto& t = CreateTerminator();
-			t.name = "Num";
+			//translate number token as terminator "num"
+			auto& t = CreateTerminator("num");
 			t.translation = [this](const Token& token)
 			{
 				return token.type == Token::TokenType::number;
@@ -45,7 +44,7 @@ public:
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "F -> Num";
+			p.expression = "F -> num";
 			p.SetAction<float, Empty>(
 				[this](Empty)->float
 				{

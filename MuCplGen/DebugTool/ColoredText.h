@@ -1,9 +1,8 @@
 #pragma once
 #ifdef _WIN32
 #include <Windows.h>
-#else
-
 #endif
+#include <iostream>
 
 //   0 = black			8 = gray
 //   1 = blue			9 = tint blue
@@ -69,9 +68,11 @@ namespace MuCplGen::Debug
 
 
 	inline void SetConsoleColor(
+		std::ostream& log = std::cout,
 		ConsoleForegroundColor foreColor = ConsoleForegroundColor::White,
 		ConsoleBackgroundColor backColor = ConsoleBackgroundColor::Black)
 	{
+		if (&log != &std::cout) return;
 #ifdef _WIN32
 		HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 		SetConsoleTextAttribute(handle, (WORD)foreColor | (WORD)backColor);

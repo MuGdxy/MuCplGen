@@ -16,7 +16,7 @@ namespace MuCplGen::Debug
 	{
 		static_assert(std::is_base_of<DebugToken, Token>::value, "To Highlight, your token should derived from DebugToken");
 		if ((&log) != (&std::cout)) { log << "[token highlight only validates with std::cout]"; }
-		SetConsoleColor(ConsoleForegroundColor::White);
+		SetConsoleColor(log, ConsoleForegroundColor::White);
 		auto error = false;
 		size_t error_iter = 0;
 		size_t start = 0;
@@ -25,7 +25,7 @@ namespace MuCplGen::Debug
 		size_t token_iter = 0;
 		for (size_t i = 0; i < input_text.size(); i++)
 		{
-			SetConsoleColor(ConsoleForegroundColor::White);
+			SetConsoleColor(log, ConsoleForegroundColor::White);
 			log << "[" << input_text[i].line_no << "\t]";
 			size_t j = 0;
 			bool over = false;
@@ -39,14 +39,14 @@ namespace MuCplGen::Debug
 						&& j <= token_set[token_iter].end
 						&& token_set[token_iter].start <= j)
 					{
-						SetConsoleColor(token_set[token_iter].color);
+						SetConsoleColor(log, token_set[token_iter].color);
 						log << input_text[i].content[j];
 						++j;
 					}
 					else if (i == token_set[token_iter].line - start && j < token_set[token_iter].start
 						|| i < token_set[token_iter].line - start)
 					{
-						SetConsoleColor((ConsoleForegroundColor)0x2/*light green*/);
+						SetConsoleColor(log, ConsoleForegroundColor::Green);
 						log << input_text[i].content[j];
 						++j;
 					}
@@ -60,7 +60,7 @@ namespace MuCplGen::Debug
 				}
 				else
 				{
-					SetConsoleColor(ConsoleForegroundColor::Green);
+					SetConsoleColor(log, ConsoleForegroundColor::Green);
 					log << input_text[i].content[j];
 					++j;
 				}
@@ -68,16 +68,16 @@ namespace MuCplGen::Debug
 			log << std::endl;
 			if (error)
 			{
-				SetConsoleColor(ConsoleForegroundColor::Red);
+				SetConsoleColor(log, ConsoleForegroundColor::Red);
 				log << "[" << input_text[i].line_no << "\t]";
 				for (size_t t = 0; t < token_set[error_info_pair[error_iter].first].start; ++t)
 					log << " ";
 				log << "^" << error_info_pair[error_iter++].second << std::endl;
-				SetConsoleColor(ConsoleForegroundColor::White);
+				SetConsoleColor(log);
 				error = false;
 			}
 		}
-		SetConsoleColor(ConsoleForegroundColor::White);
+		SetConsoleColor(log);
 	}
 
 	template<typename Token = DebugToken>

@@ -136,9 +136,8 @@ public:
 		SetStorage("./storage/MainCalculator.bin");
 
 		{
-			//translate number token as terminator Num
-			auto& t = CreateTerminator();
-			t.name = "Num";
+			//translate number token as terminator "num"
+			auto& t = CreateTerminator("num");
 			t.translation = [this](const Token& token)
 			{
 				return token.type == Token::TokenType::number;
@@ -160,7 +159,7 @@ public:
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "CalSub.Num -> Num";
+			p.expression = "CalSub.Num -> num";
 			p.SetAction<float, Empty>(
 				[this](Empty)->float
 				{

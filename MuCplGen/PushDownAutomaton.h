@@ -22,8 +22,11 @@ namespace MuCplGen
 		PDABuildConflict(const std::string& e) : content(e) {}
 		virtual const char* what() const noexcept override { return content.c_str(); }
 		virtual ~PDABuildConflict() override {}
-		size_t production_index;
-		size_t sym;
+		size_t head = -1;
+		size_t production_index = -1;
+		size_t sym = -1;
+		size_t sym_production_index = -1;
+		size_t follow = -1;
 	private:
 		std::string content;
 	};
@@ -879,7 +882,7 @@ namespace MuCplGen
 			iter = collection.size();
 			changed = false;
 			for (size_t i = start_pos; i < collection.size(); ++i)
-				for (int Sym = 0; Sym <= (int)end; ++Sym)
+				for (size_t Sym = 0; Sym <= (size_t)end; ++Sym)
 				{
 					// for every symbol X
 					SimplifiedSetOfItems temp_I =
@@ -923,13 +926,13 @@ namespace MuCplGen
 		const T& epsilon, const T& end, const T& start)
 	{
 		ActionTable ret;
-		auto int_end = (int)end;
-		auto int_epsilon = (int)epsilon;
-		auto int_start = (int)start;
+		auto int_end = (size_t)end;
+		auto int_epsilon = (size_t)epsilon;
+		auto int_start = (size_t)start;
 		for (const auto& item : goto_table)
 		{
 			auto Sym = std::get<1>(std::get<0>(item));
-			auto int_sym = (int)Sym;
+			auto int_sym = (size_t)Sym;
 			auto cur_state = std::get<0>(std::get<0>(item));
 			auto aim_state = std::get<1>(item);
 			// every certain goto in goto_table
@@ -948,7 +951,7 @@ namespace MuCplGen
 						|| a.sym != iter->second.sym)
 					{
 						PDABuildConflict conflict("Conflict");
-						conflict.production_index = a.production_index;
+						conflict.sym_production_index = a.production_index;
 						conflict.sym = a.sym;
 						throw conflict;
 					}
@@ -964,7 +967,7 @@ namespace MuCplGen
 						a.type = ActionType::move_epsilon;
 						// also record the next state to be moved into the stack
 						a.aim_state = aim_state;
-						a.sym = int_sym;
+						a.sym = epsilon;
 						a.production_length = 0;
 						auto iter = ret.find({ cur_state, item.LAterm });
 						if (iter != ret.end())
@@ -973,8 +976,10 @@ namespace MuCplGen
 								|| a.production_index != iter->second.production_index)
 							{
 								PDABuildConflict conflict("Conflict");
-								conflict.production_index = a.production_index;
+								conflict.head = item.nonterm;
+								conflict.production_index = item.production_index;
 								conflict.sym = a.sym;
+								conflict.follow = item.LAterm;
 								throw conflict;
 							}
 						ret[{cur_state, item.LAterm}] = std::move(a);
@@ -1014,8 +1019,9 @@ namespace MuCplGen
 						if (ret.count({ i, item.LAterm }))
 						{
 							PDABuildConflict conflict("Conflict");
-							conflict.production_index = a.production_index;
-							conflict.sym = a.sym;
+							conflict.head = item.nonterm;
+							conflict.production_index = item.production_index;
+							conflict.follow = item.LAterm;
 							throw conflict;
 						}
 						ret[{i, item.LAterm}] = std::move(a);
@@ -1060,7 +1066,7 @@ namespace MuCplGen
 						|| a.sym != iter->second.sym)
 					{
 						PDABuildConflict conflict("Conflict");
-						conflict.production_index = a.production_index;
+						conflict.sym_production_index = a.production_index;
 						conflict.sym = a.sym;
 						throw conflict;
 					}
@@ -1070,7 +1076,10 @@ namespace MuCplGen
 			{
 				for (size_t i = 0; i < collection[cur_state].non_cores.size(); ++i)
 					if (collection[cur_state].non_cores[i])
+					{
+						size_t production_index = 0;
 						for (const auto& pro : production_table[i])
+						{
 							if (pro[0] == epsilon)
 								for (const auto& term : follow_table[i])
 								{
@@ -1084,16 +1093,22 @@ namespace MuCplGen
 									if (iter != ret.end())
 										if (a.type != iter->second.type
 											|| a.sym != iter->second.sym
-											|| a.production_index != iter->second.production_index)
+											/*|| a.production_index != iter->second.production_index*/)
 
 										{
 											PDABuildConflict conflict("Conflict");
-											conflict.production_index = a.production_index;
+											conflict.head = i;
+											conflict.production_index = production_index;
 											conflict.sym = a.sym;
+											conflict.follow = term;
 											throw conflict;
 										}
 									ret[{cur_state, term}] = std::move(a);
 								}
+							++production_index;
+						}
+					}
+
 			}
 		}
 		for (size_t i = 0; i < collection.size(); ++i)
@@ -1130,8 +1145,9 @@ namespace MuCplGen
 							if (ret.count({ i, term }))
 							{
 								PDABuildConflict conflict("Conflict");
-								conflict.production_index = a.production_index;
-								conflict.sym = a.sym;
+								conflict.head = core.sym;
+								conflict.production_index = core.production_index;
+								conflict.follow = term;
 								throw conflict;
 							}
 							ret[{i, term}] = std::move(a);

@@ -15,4 +15,3 @@ d = - alan.table[1][b][2];
 c = alan.age;
 //error token
 d = aan;
-;;;

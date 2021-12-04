@@ -80,7 +80,6 @@ namespace MuCplGen
 			size_t iter = 0;
 			bool on = true;
 			bool acc = false;
-			T input_term = transfer_func(token_set[iter]);
 			while (on)
 			{
 				if (iter >= token_set.size())
@@ -90,6 +89,7 @@ namespace MuCplGen
 					break;
 				}
 				if (state_stack.size() == 0) throw Exception("Check if you call Build() in your constructor.");
+				T input_term = transfer_func(token_set[iter]);
 				auto action_iter = action_table.find({ state_stack.top(),input_term });
 				if (action_table.find({ state_stack.top(),input_term }) != action_table.end())
 				{
@@ -101,7 +101,6 @@ namespace MuCplGen
 						semantic_stack.push(nullptr);
 						top_token_iter = iter;
 						++iter;
-						input_term = transfer_func(token_set[iter]);
 						if (debug_option & DebugOption::ParserDetail)
 							log << "move_in state:" << action.aim_state << " term: " << action.sym << std::endl;
 						break;
@@ -128,7 +127,7 @@ namespace MuCplGen
 							{
 							case ParserErrorCode::Stop:
 								if (debug_option & DebugOption::ParserError)
-									log << information << ":Parse STOP for semantic Error" << std::endl;
+									log << parser_name << ":Parse STOP for semantic Error" << std::endl;
 								on = false;
 								break;
 							default:
@@ -149,9 +148,9 @@ namespace MuCplGen
 						);
 						if (debug_option & DebugOption::ParserDetail)
 						{
-							SetConsoleColor(ConsoleForegroundColor::Yellow, ConsoleBackgroundColor::Blue);
-							log << information << ":Parser Accept";
-							SetConsoleColor();
+							SetConsoleColor(log, ConsoleForegroundColor::Yellow, ConsoleBackgroundColor::Blue);
+							log << parser_name << ":Parser Accept";
+							SetConsoleColor(log);
 							log << std::endl;
 							
 						}
@@ -165,7 +164,7 @@ namespace MuCplGen
 				else if (error_func)
 				{
 					if (debug_option & DebugOption::ParserError)
-						log << information << ":Parser Error" << std::endl;
+						log << parser_name << ":Parser Error" << std::endl;
 					std::vector<T> expects;
 					for (const auto& item : action_table)
 						if (std::get<0>(item.first) == state_stack.top())
@@ -231,7 +230,7 @@ namespace MuCplGen
 		using Base = BaseParser<UserToken, T>;
 		using CollectionOfItemSets = typename PushDownAutomaton<T>::CollectionOfItemSets;
 	public:
-		SLRParser() { this->parser_name = "SLR"; }
+		SLRParser() { this->parser_name = "SLR Parser"; }
 
 		SLRParser(
 			const typename Base::ProductionTable& production_table,
@@ -269,7 +268,7 @@ namespace MuCplGen
 		using Base = BaseParser<UserToken, T>;
 		using LR1Collection = typename PushDownAutomaton<T>::LR1Collection;
 	public:
-		LR1Parser() { this->parser_name = "LR1"; }
+		LR1Parser() { this->parser_name = "LR1 Parser"; }
 
 		LR1Parser(
 			const typename Base::ProductionTable& production_table,
