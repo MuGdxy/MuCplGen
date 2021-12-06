@@ -71,7 +71,7 @@ namespace MuCplGen
 				auto& p = CreateParseRule();
 				p.action_name = "Power()";
 				p.expression = "P -> P ^ F";
-				p.SetAction<Ty, Ty, Empty, Ty>(
+				p.SetAction<Ty(Ty, Empty, Ty)>(
 					[this](Ty P, Empty, Ty F)->Ty
 					{
 						return std::pow(P, F);
@@ -88,7 +88,7 @@ namespace MuCplGen
 				auto& p = CreateParseRule();
 				p.action_name = "Multipy()";
 				p.expression = "T -> T * P";
-				p.SetAction<Ty, Ty, Empty, Ty>(
+				p.SetAction<Ty(Ty, Empty, Ty)>(
 					[this](Ty T, Empty, Ty P)->Ty
 					{
 						return T * P;
@@ -100,7 +100,7 @@ namespace MuCplGen
 				auto& p = CreateParseRule();
 				p.action_name = "Divid()";
 				p.expression = "T -> T / P";
-				p.SetAction<Ty, Ty, Empty, Ty>(
+				p.SetAction<Ty(Ty, Empty, Ty)>(
 					[this](Ty T, Empty, Ty P)->Ty
 					{
 						return T / P;
@@ -117,7 +117,7 @@ namespace MuCplGen
 				auto& p = CreateParseRule();
 				p.action_name = "Add()";
 				p.expression = "E -> E + T";
-				p.SetAction<Ty, Ty, Empty, Ty>(
+				p.SetAction<Ty(Ty, Empty, Ty)>(
 					[this](Ty E, Empty, Ty T)->Ty
 					{
 						return E + T;
@@ -129,7 +129,7 @@ namespace MuCplGen
 				auto& p = CreateParseRule();
 				p.action_name = "Sub()";
 				p.expression = "E -> E - T";
-				p.SetAction<Ty, Ty, Empty, Ty>(
+				p.SetAction<Ty(Ty, Empty, Ty)>(
 					[this](Ty E, Empty, Ty T)->Ty
 					{
 						return E - T;

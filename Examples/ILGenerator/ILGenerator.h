@@ -221,7 +221,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "begin_def";
 			p.expression = "M0 -> epsilon";
-			p.SetAction<Empty, Empty>(
+			p.SetAction<Empty(Empty)>(
 				[this](Empty)->Empty
 				{
 					Env.SetVarTable();
@@ -245,7 +245,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "begin_typedef";
 			p.expression = "M1 -> epsilon";
-			p.SetAction<Empty, Empty>(
+			p.SetAction<Empty(Empty)>(
 				[this](Empty)->Empty
 				{
 					Env.SetTypeTable();
@@ -260,8 +260,8 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "end_typedef";
 			p.expression = "TyDef -> TyHead { Defs } ;";
-			p.SetAction<Empty, ILEntry*>(
-				[this](ILEntry* entry)->Empty
+			p.SetAction<Empty(ILEntry*, Empty, Empty, Empty, Empty)>(
+				[this](ILEntry* entry, Empty, Empty, Empty, Empty)->Empty
 				{
 					auto& token_set = GetTokenSet();
 					auto iter = TokenIter();
@@ -283,7 +283,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "set_typeHead";
 			p.expression = "TyHead -> Record Id";
-			p.SetAction<ILEntry*, Token*, Token*>(
+			p.SetAction<ILEntry*(Token*, Token*)>(
 				[this](Token* type_token, Token* token)->ILEntry*
 				{
 					auto entry = Env.CreateILEntry();
@@ -321,8 +321,8 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "set_as_def";
 			p.expression = "Def -> Ty Id ;";
-			p.SetAction<Empty, ILEntry*, Token*>(
-				[this](ILEntry* entry, Token* token)->Empty
+			p.SetAction<Empty(ILEntry*, Token*, Empty)>(
+				[this](ILEntry* entry, Token* token, Empty)->Empty
 				{
 					entry->token = token;
 					Env.AddSubEntryToCurrent(entry);
@@ -335,8 +335,8 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "set_def_with_val";
 			p.expression = "Def -> Ty Id = ImVal ;";
-			p.SetAction<Empty, ILEntry*, Token*, Empty, Token*>(
-				[this](ILEntry* entry, Token* token, Empty, Token* value_token)->Empty
+			p.SetAction<Empty(ILEntry*, Token*, Empty, Token*, Empty)>(
+				[this](ILEntry* entry, Token* token, Empty, Token* value_token, Empty)->Empty
 				{
 					entry->token = token;
 					entry->value = value_token->name;
@@ -379,7 +379,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "complete_arrayType";
 			p.expression = "Ty -> BTy Arr";
-			p.SetAction<PassOn, ILEntry*, std::vector<size_t>&>(complete_arrayType);
+			p.SetAction<PassOn(ILEntry*, std::vector<size_t>&)>(complete_arrayType);
 		}
 
 		//Ty -> CTy Arr {complete_arrayType}
@@ -387,7 +387,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "complete_arrayType";
 			p.expression = "Ty -> CTy Arr";
-			p.SetAction<PassOn, ILEntry*, std::vector<size_t>&>(complete_arrayType);
+			p.SetAction<PassOn(ILEntry*, std::vector<size_t>&)>(complete_arrayType);
 		}
 
 		//Ty -> BTy {passon_0}
@@ -400,7 +400,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "building_array";
 			p.expression = "Arr -> Arr Cmp";
-			p.SetAction<PassOn, std::vector<size_t>&, Token*>(
+			p.SetAction<PassOn(std::vector<size_t>&, Token*)>(
 				[this](std::vector<size_t>& array_info, Token* token)->PassOn
 				{
 					array_info.push_back(std::stoi(token->name));
@@ -413,7 +413,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "begin_array";
 			p.expression = "Arr -> Cmp";
-			p.SetAction<std::vector<size_t>, Token*>(
+			p.SetAction<std::vector<size_t>(Token*)>(
 				[this](Token* token)->std::vector<size_t>
 				{
 					std::vector<size_t> array_info;
@@ -434,7 +434,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "set_customeType";
 			p.expression = "CTy -> cTy";
-			p.SetAction<ILEntry*, Empty>(
+			p.SetAction<ILEntry*(Empty)>(
 				[this](Empty)
 				{
 					ILEntry* entry = nullptr;
@@ -451,7 +451,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "set_baseType";
 			p.expression = "BTy -> bTy";
-			p.SetAction<ILEntry*, Empty>(
+			p.SetAction<ILEntry*(Empty)>(
 				[this](Empty)
 				{
 					auto entry = Env.CreateILEntry();
@@ -475,14 +475,14 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "Record -> record";
-			p.SetAction<Token*, Empty>(get_token);
+			p.SetAction<Token*(Empty)>(get_token);
 		}
 
 		//Id -> id {get_token};
 		{
 			auto& p = CreateParseRule();
 			p.expression = "Id -> id";
-			p.SetAction<Token*, Empty>(get_token);
+			p.SetAction<Token*(Empty)>(get_token);
 		}
 
 		//ImVal -> Str {passon_0}
@@ -501,14 +501,14 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "Str -> str";
-			p.SetAction<Token*, Empty>(get_token);
+			p.SetAction<Token*(Empty)>(get_token);
 		}
 
 		//Num -> num {get_token}
 		{
 			auto& p = CreateParseRule();
 			p.expression = "Num -> num";
-			p.SetAction<Token*, Empty>(get_token);
+			p.SetAction<Token*(Empty)>(get_token);
 		}
 
 		auto error_action = [this](const std::vector<std::any*>& data)
@@ -525,8 +525,8 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "assign";
 			p.expression = "Asgn -> LVal = Expr ;";
-			p.SetAction<Empty, Address*, Empty, Address*>(
-				[this](Address* laddr, Empty, Address* raddr)->Empty
+			p.SetAction<Empty(Address*, Empty, Address*, Empty)>(
+				[this](Address* laddr, Empty, Address* raddr, Empty)->Empty
 				{
 					Env.ILCodeStream.push_back({ laddr, "", raddr, nullptr });
 					return Empty{};
@@ -580,7 +580,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "do_add";
 			p.expression = "RVal -> RVal + Tpl";
-			p.SetAction<Address*, Address*, Empty, Address*>(
+			p.SetAction<Address*(Address*, Empty, Address*)>(
 				[this](Address* rval, Empty, Address* tpl)->Address*
 				{
 					auto new_addr = Env.CreateAddress();
@@ -594,7 +594,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "do_sub";
 			p.expression = "RVal -> RVal - Tpl";
-			p.SetAction<Address*, Address*, Empty, Address*>(
+			p.SetAction<Address*(Address*, Empty, Address*)>(
 				[this](Address* rval, Empty, Address* tpl)->Address*
 				{
 					auto new_addr = Env.CreateAddress();
@@ -613,7 +613,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "do_mul";
 			p.expression = "Tpl -> Tpl * Fn";
-			p.SetAction<Address*, Address*, Empty, Address*>(
+			p.SetAction<Address*(Address*, Empty, Address*)>(
 				[this](Address* rval, Empty, Address* tpl)->Address*
 				{
 					auto new_addr = Env.CreateAddress();
@@ -627,7 +627,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "do_div";
 			p.expression = "Tpl -> Tpl / Fn";
-			p.SetAction<Address*, Address*, Empty, Address*>(
+			p.SetAction<Address*(Address*, Empty, Address*)>(
 				[this](Address* rval, Empty, Address* tpl)->Address*
 				{
 					auto new_addr = Env.CreateAddress();
@@ -653,7 +653,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "do_negate";
 			p.expression = "Fn -> - Val";
-			p.SetAction<Address*, Empty, Address*>(
+			p.SetAction<Address*(Empty, Address*)>(
 				[this](Empty, Address* addr)->Address*
 				{
 					auto new_addr = Env.CreateAddress();
@@ -679,7 +679,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "create_addr";
 			p.expression = "Val -> ImVal";
-			p.SetAction<Address*, Token*>(
+			p.SetAction<Address*(Token*)>(
 				[this](Token* token)->Address*
 				{
 					auto addr = Env.CreateAddress();
@@ -695,7 +695,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "complete_lVal";
 			p.expression = "LVal -> M0 LValCmp";
-			p.SetAction<PassOn, Empty, Address*>(
+			p.SetAction<PassOn(Empty, Address*)>(
 				[this](Empty, Address* addr)->PassOn
 				{
 					Env.PopEntry();
@@ -708,7 +708,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "start_lVal";
 			p.expression = "M0 -> epsilon";
-			p.SetAction<Empty, Empty>(
+			p.SetAction<Empty(Empty)>(
 				[this](Empty)->Empty
 				{
 					Env.PushEntry();
@@ -723,7 +723,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "filling_addr";
 			p.expression = "LValCmp -> LValCmp . LValMem";
-			p.SetAction<PassOn, Address*, Empty, Address*>(
+			p.SetAction<PassOn(Address*, Empty, Address*)>(
 				[this](Address* LValCmp, Empty, Address* LValMem)
 				{
 					LValCmp->chain.push_back(LValMem->chain[0]);
@@ -739,7 +739,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "start_Cmp";
 			p.expression = "LValCmp -> LValMem";
-			p.SetAction<Address*, Address*>(
+			p.SetAction<Address*(Address*)>(
 				[this](Address* addr)
 				{
 					Env.top = addr->chain[addr->chain.size() - 1];
@@ -753,7 +753,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "create_id_addr";
 			p.expression = "LValMem -> MemId";
-			p.SetAction<Address*, Token*>(
+			p.SetAction<Address*(Token*)>(
 				[this](Token* token)
 				{
 					if (Env.top->table_ptr != nullptr)
@@ -792,7 +792,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "complete_array";
 			p.expression = "ArrVar -> ArrId Arr";
-			p.SetAction<PassOn, Address*, Address*>(
+			p.SetAction<PassOn(Address*, Address*)>(
 				[this](Address* ArrId, Address* Arr) -> PassOn
 				{
 					ArrId->array_index.push_back(Arr);
@@ -807,7 +807,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "create_array_dimension";
 			p.expression = "ArrId -> Id";
-			p.SetAction<Address*, Token*>(
+			p.SetAction<Address*(Token*)>(
 				[this](Token* token) -> Address*
 				{
 					PushAndCreateDim();
@@ -833,7 +833,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "process_offset";
 			p.expression = "Arr -> Arr Cmp";
-			p.SetAction<Address*, Address*, Address*>(
+			p.SetAction<Address*(Address*, Address*)>(
 				[this](Address* addr1, Address* addr2) -> Address*
 				{
 					auto cur = cur_addr->chain[cur_addr->chain.size() - 1];
@@ -866,8 +866,8 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "inc_array_dimension";
 			p.expression = "Cmp -> [ RVal ]";
-			p.SetAction<PassOn, Empty, Address*>(
-				[this](Empty, Address* addr) -> PassOn
+			p.SetAction<PassOn(Empty, Address*, Empty)>(
+				[this](Empty, Address* addr, Empty) -> PassOn
 				{
 					++cur_dim;
 					return PassOn(1);
@@ -888,19 +888,19 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "Str -> str";
-			p.SetAction<Token*, Empty>(get_token);
+			p.SetAction<Token*(Empty)>(get_token);
 		}
 		//	Id -> id; {get_token};
 		{
 			auto& p = CreateParseRule();
 			p.expression = "Id -> id";
-			p.SetAction<Token*, Empty>(get_token);
+			p.SetAction<Token*(Empty)>(get_token);
 		}
 		//	Num->num; {get_token};
 		{
 			auto& p = CreateParseRule();
 			p.expression = "Num -> num";
-			p.SetAction<Token*, Empty>(get_token);
+			p.SetAction<Token*(Empty)>(get_token);
 		}
 	}
 	void ShowTables()

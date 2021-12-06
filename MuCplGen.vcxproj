@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Examples\CalculatorSubModule\Calculator.h" />
+    <ClInclude Include="Examples\SolveSemanticError\Calculator.h" />
     <ClInclude Include="MuCplGen\CFG.h" />
     <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
@@ -43,7 +45,8 @@
     <ClInclude Include="MuCplGen\Token.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\PDAConflict\main.cpp" />
+    <ClCompile Include="Examples\CalculatorSubModule\main.cpp" />
+    <ClCompile Include="Examples\SolveSemanticError\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

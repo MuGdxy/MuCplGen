@@ -49,12 +49,15 @@ namespace MuCplGen
 		friend std::ostream& operator << (std::ostream& os, const BaseToken& token)
 		{
 			os << "basic_token:" << std::endl;
-			os << "type_name:" << token.type_name << std::endl;
-			os << "name:" << token.name << std::endl;
-			os << "line:" << token.line << std::endl;
-			os << "Start:" << token.start << std::endl;
-			os << "end:" << token.end << std::endl;
-			os << "is_end_token:" << token.end_of_tokens;
+			if (token.IsEndToken()) os << "END TOKEN" << std::endl;
+			else
+			{
+				os << "type_name:" << token.type_name << std::endl;
+				os << "name:" << token.name << std::endl;
+				os << "line:" << token.line << std::endl;
+				os << "start:" << token.start << std::endl;
+				os << "end:" << token.end << std::endl;
+			}
 			return os;
 		}
 	protected:

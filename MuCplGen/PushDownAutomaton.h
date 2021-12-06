@@ -490,9 +490,9 @@ namespace MuCplGen
 			//do until Follow_Table no longer changes;
 			for (int non_term = int_first_of_nonterm; non_term <= int_end_of_nonterm; ++non_term)
 			{
-				for (size_t production_index = 0; production_index < production_table[non_term].size(); ++production_index)
+				for (int production_index = 0; production_index < production_table[non_term].size(); ++production_index)
 				{
-					for (size_t pos_B = 0; pos_B < production_table[non_term][production_index].size(); ++pos_B)
+					for (int pos_B = 0; pos_B < production_table[non_term][production_index].size(); ++pos_B)
 					{
 						//if(ret[0].size()==2)
 						//	__debugbreak();

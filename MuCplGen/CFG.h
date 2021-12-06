@@ -10,7 +10,17 @@
 #include "MuException.h"
 namespace MuCplGen
 {
-    struct Empty {};
+    struct Empty{};
+
+    template<class T = void>
+    class StaticVar
+    {
+        friend struct ParseRule;
+        static Empty empty;
+    };
+
+    template<class T>
+    Empty StaticVar<T>::empty;
 
     struct PassOn
     {
@@ -29,12 +39,12 @@ namespace MuCplGen
         virtual ~SemanticError() override {}
     };
 
-    template<class UserToken, class T>
+    template<class UserToken, class T = size_t>
     struct Terminator
     {
         template<class Parser>
         friend class SyntaxDirected;
-        friend class ParseRule;
+        friend struct ParseRule;
         using Token = UserToken;
         std::string scope;
         std::string name;
@@ -110,7 +120,7 @@ namespace MuCplGen
                 body.push_back(buf);
             }
         }
-    public:
+
         template<class Ret>
         void SetSemanticErrorAction(std::function<Ret(const std::vector<std::any*>&)> on_error)
         {
@@ -136,9 +146,8 @@ namespace MuCplGen
             if (arg == nullptr)
             {
                 //to fool the compiler
-                auto e = Empty{};
                 if (typeid(typename std::remove_reference<Arg>::type) == typeid(Empty))
-                    return *reinterpret_cast<typename std::remove_reference<Arg>::type*>(&e);
+                    return *reinterpret_cast<typename std::remove_reference<Arg>::type*>(&StaticVar<void>::empty);
                 else
                 {
                     std::string name = typeid(typename std::remove_reference<Arg>::type).name();
@@ -146,7 +155,7 @@ namespace MuCplGen
                     ss << "Unmatched Type!"
                         << "Parser Rule=" << this->action_name << std::endl
                         << "Production=" << this->fullname_expression << std::endl
-                        << "Type of income data is <Empty>, your parameter=" << name << std::endl
+                        << "Type of income data is <Empty>, your parameter=" << name << "(Arg" << index << ")" << std::endl
                         << "Check your Semantic Action parameters!";
                     throw(Exception(ss.str()));
                 }
@@ -161,13 +170,20 @@ namespace MuCplGen
             ss << "Unmatched Type! Check your Semantic Action of this Parser Rule!" << std::endl
                 << "Parser Rule=" << this->action_name << std::endl
                 << "Production=" << this->fullname_expression << std::endl
-                << "your para type=" << your_parameter_type_name
-                << " income data type=" << data_type_name;
+                << "your para type=" << your_parameter_type_name << "(Arg" << index << ")" << std::endl
+                << " income data type=" << data_type_name << std::endl
+                << "Check your Semantic Action parameters!";
             throw(Exception(ss.str()));
         }
     private:
-        static std::string scoped_on;
+        int current_arg = -1;
+        void BeginArgs(const std::vector<std::any*>& data) { current_arg = data.size(); }
 
+        template<class Arg>
+        Arg GetArg(const std::vector<std::any*>& data)
+        {
+            return GetArg<Arg>(data, --current_arg);
+        }
         template<class Ret>
         std::any* RecordRet(Ret&& ret, const std::vector<std::any*>& data)
         {
@@ -192,6 +208,12 @@ namespace MuCplGen
                 gc.pop();
             }
         }
+        
+        template<class T, class U>
+        void SetAction(U&& action)
+        {
+            ActionProcessor<T>::Set(this, action);
+        }
 
         void SetAction(void* ptr)
         {
@@ -205,503 +227,35 @@ namespace MuCplGen
             semantic_action = [this, index = passon.index](std::vector<std::any*> data) { return data[index]; };
         }
 
-        //--{
-//CodeGen by Python
-//date: 2021-11-15
-        template<class Ret, class Arg0>
-        void SetAction(std::function<Ret(Arg0)> action)
+        template<class T>
+        class ActionProcessor;
+
+        template<class Ret, class... Args>
+        class ActionProcessor<Ret(Args...)>
         {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
+        public:
+            template<class T>
+            static void Set(ParseRule* pr, T&& action)
             {
-                auto arg0 = GetArg<Arg0>(data, 0);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
+                pr->semantic_action = [action, pr](std::vector<std::any*> data)->std::any*
                 {
-                    ret = action(arg0);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1>
-        void SetAction(std::function<Ret(Arg0, Arg1)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4, Arg5)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-                auto&& arg5 = GetArg<Arg5>(data, 5);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4, arg5);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-                auto&& arg5 = GetArg<Arg5>(data, 5);
-                auto&& arg6 = GetArg<Arg6>(data, 6);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-                auto&& arg5 = GetArg<Arg5>(data, 5);
-                auto&& arg6 = GetArg<Arg6>(data, 6);
-                auto&& arg7 = GetArg<Arg7>(data, 7);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-                auto&& arg5 = GetArg<Arg5>(data, 5);
-                auto&& arg6 = GetArg<Arg6>(data, 6);
-                auto&& arg7 = GetArg<Arg7>(data, 7);
-                auto&& arg8 = GetArg<Arg8>(data, 8);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Arg9)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-                auto&& arg5 = GetArg<Arg5>(data, 5);
-                auto&& arg6 = GetArg<Arg6>(data, 6);
-                auto&& arg7 = GetArg<Arg7>(data, 7);
-                auto&& arg8 = GetArg<Arg8>(data, 8);
-                auto&& arg9 = GetArg<Arg9>(data, 9);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Arg9, Arg10)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-                auto&& arg5 = GetArg<Arg5>(data, 5);
-                auto&& arg6 = GetArg<Arg6>(data, 6);
-                auto&& arg7 = GetArg<Arg7>(data, 7);
-                auto&& arg8 = GetArg<Arg8>(data, 8);
-                auto&& arg9 = GetArg<Arg9>(data, 9);
-                auto&& arg10 = GetArg<Arg10>(data, 10);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10, class Arg11>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Arg9, Arg10, Arg11)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-                auto&& arg5 = GetArg<Arg5>(data, 5);
-                auto&& arg6 = GetArg<Arg6>(data, 6);
-                auto&& arg7 = GetArg<Arg7>(data, 7);
-                auto&& arg8 = GetArg<Arg8>(data, 8);
-                auto&& arg9 = GetArg<Arg9>(data, 9);
-                auto&& arg10 = GetArg<Arg10>(data, 10);
-                auto&& arg11 = GetArg<Arg11>(data, 11);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10, class Arg11, class Arg12>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Arg9, Arg10, Arg11, Arg12)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-                auto&& arg5 = GetArg<Arg5>(data, 5);
-                auto&& arg6 = GetArg<Arg6>(data, 6);
-                auto&& arg7 = GetArg<Arg7>(data, 7);
-                auto&& arg8 = GetArg<Arg8>(data, 8);
-                auto&& arg9 = GetArg<Arg9>(data, 9);
-                auto&& arg10 = GetArg<Arg10>(data, 10);
-                auto&& arg11 = GetArg<Arg11>(data, 11);
-                auto&& arg12 = GetArg<Arg12>(data, 12);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10, class Arg11, class Arg12, class Arg13>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Arg9, Arg10, Arg11, Arg12, Arg13)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-                auto&& arg5 = GetArg<Arg5>(data, 5);
-                auto&& arg6 = GetArg<Arg6>(data, 6);
-                auto&& arg7 = GetArg<Arg7>(data, 7);
-                auto&& arg8 = GetArg<Arg8>(data, 8);
-                auto&& arg9 = GetArg<Arg9>(data, 9);
-                auto&& arg10 = GetArg<Arg10>(data, 10);
-                auto&& arg11 = GetArg<Arg11>(data, 11);
-                auto&& arg12 = GetArg<Arg12>(data, 12);
-                auto&& arg13 = GetArg<Arg13>(data, 13);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10, class Arg11, class Arg12, class Arg13, class Arg14>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Arg9, Arg10, Arg11, Arg12, Arg13, Arg14)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-                auto&& arg5 = GetArg<Arg5>(data, 5);
-                auto&& arg6 = GetArg<Arg6>(data, 6);
-                auto&& arg7 = GetArg<Arg7>(data, 7);
-                auto&& arg8 = GetArg<Arg8>(data, 8);
-                auto&& arg9 = GetArg<Arg9>(data, 9);
-                auto&& arg10 = GetArg<Arg10>(data, 10);
-                auto&& arg11 = GetArg<Arg11>(data, 11);
-                auto&& arg12 = GetArg<Arg12>(data, 12);
-                auto&& arg13 = GetArg<Arg13>(data, 13);
-                auto&& arg14 = GetArg<Arg14>(data, 14);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-        template<class Ret, class Arg0, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5, class Arg6, class Arg7, class Arg8, class Arg9, class Arg10, class Arg11, class Arg12, class Arg13, class Arg14, class Arg15>
-        void SetAction(std::function<Ret(Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Arg9, Arg10, Arg11, Arg12, Arg13, Arg14, Arg15)> action)
-        {
-            semantic_action = [action, this](std::vector<std::any*> data)->std::any*
-            {
-                auto&& arg0 = GetArg<Arg0>(data, 0);
-                auto&& arg1 = GetArg<Arg1>(data, 1);
-                auto&& arg2 = GetArg<Arg2>(data, 2);
-                auto&& arg3 = GetArg<Arg3>(data, 3);
-                auto&& arg4 = GetArg<Arg4>(data, 4);
-                auto&& arg5 = GetArg<Arg5>(data, 5);
-                auto&& arg6 = GetArg<Arg6>(data, 6);
-                auto&& arg7 = GetArg<Arg7>(data, 7);
-                auto&& arg8 = GetArg<Arg8>(data, 8);
-                auto&& arg9 = GetArg<Arg9>(data, 9);
-                auto&& arg10 = GetArg<Arg10>(data, 10);
-                auto&& arg11 = GetArg<Arg11>(data, 11);
-                auto&& arg12 = GetArg<Arg12>(data, 12);
-                auto&& arg13 = GetArg<Arg13>(data, 13);
-                auto&& arg14 = GetArg<Arg14>(data, 14);
-                auto&& arg15 = GetArg<Arg15>(data, 15);
-
-                Ret ret;
-                bool error = false;
-                SemanticError se;
-                try
-                {
-                    ret = action(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
-                }
-                catch (SemanticError e)
-                {
-                    error = true;
-                    se = e;
-                }
-                if (!error) return RecordRet(ret, data);
-                else return RecordRet(se.error_data, data);
-            };
-        }
-
-        //--}
-
-
-
+                    pr->BeginArgs(data);
+                    Ret ret;
+                    bool error = false;
+                    SemanticError se;
+                    try
+                    {
+                        ret = action(pr->GetArg<Args>(data)...);
+                    }
+                    catch (SemanticError e)
+                    {
+                        error = true;
+                        se = e;
+                    }
+                    if (!error) return pr->RecordRet(ret, data);
+                    else return pr->RecordRet(se.error_data, data);
+                };
+            }
+        };
     };
-
-    std::string ParseRule::scoped_on;
 }

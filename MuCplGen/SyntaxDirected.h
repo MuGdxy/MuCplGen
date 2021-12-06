@@ -80,9 +80,7 @@ namespace MuCplGen
 		std::unordered_map<std::string, Sym> name_to_sym;
 		std::vector<std::string> sym_to_name;
 
-
 		ProductionTable production_table;
-
 	protected:
 		using SemanticAction = std::function<std::any* (std::vector<std::any*>, size_t, TokenSet&)>;
 	private:

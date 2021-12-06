@@ -87,7 +87,7 @@ int main()
 	LineContent line;
 	line.line_no = 1;
     std::cout << "Calculate:";
-	std::cin >> line.content;
+	std::getline(std::cin, line.content);
 	lines.push_back(line);
 }
 ```
@@ -196,8 +196,8 @@ and then, we define the first Semantic Action right after the terminator definit
 {
     auto& p = CreateParseRule();
     p.expression = "F -> num";
-    //first template parameter is the return type, and others are input parameters
-    p.SetAction<float, Empty>(
+    //first template parameter is the return type, and others in "( )" are input parameters
+    p.SetAction<float(Empty)>(
         [this](Empty)->float
         {
             auto& token = CurrentToken();
@@ -235,7 +235,7 @@ cool, now we are going to calculate something.
     auto& p = CreateParseRule();
     p.action_name = "Power()";
     p.expression = "P -> P ^ F";
-    p.SetAction<float, float, Empty, float>(
+    p.SetAction<float(float, Empty, float)>(
         [this](float P, Empty, float F)->float
         {
             return std::pow(P, F);
@@ -265,7 +265,7 @@ So do the rest rules.
     auto& p = CreateParseRule();
     p.action_name = "Multipy()";
     p.expression = "T -> T * P";
-    p.SetAction<float, float, Empty, float>(
+    p.SetAction<float(float, Empty, float)>(
         [this](float T, Empty, float P)->float
         {
             return T * P;
@@ -276,7 +276,7 @@ So do the rest rules.
     auto& p = CreateParseRule();
     p.action_name = "Divid()";
     p.expression = "T -> T / P";
-    p.SetAction<float, float, Empty, float>(
+    p.SetAction<float(float, Empty, float)>(
         [this](float T, Empty, float P)->float
         {
             return T / P;
@@ -292,7 +292,7 @@ So do the rest rules.
     auto& p = CreateParseRule();
     p.action_name = "Add()";
     p.expression = "E -> E + T";
-    p.SetAction<float, float, Empty, float>(
+    p.SetAction<float(float, Empty, float)>(
         [this](float E, Empty, float T)->float
         {
             return E + T;
@@ -303,7 +303,7 @@ So do the rest rules.
     auto& p = CreateParseRule();
     p.action_name = "Sub()";
     p.expression = "E -> E - T";
-    p.SetAction<float, float, Empty, float>(
+    p.SetAction<float(float, Empty, float)>(
         [this](float E, Empty, float T)->float
         {
             return E - T;
@@ -335,7 +335,7 @@ Finally never forget the `Expr -> E`, this is the entrance of all productions, w
 {
     auto& p = CreateParseRule();
     p.expression = "Expr -> E";
-    p.SetAction<Empty, float>(
+    p.SetAction<Empty(float)>(
         [this](float res)->Empty
         {
             std::cout << "Result = " << res << std::endl;
@@ -361,7 +361,7 @@ int main()
 	LineContent line;
 	line.line_no = 1;
 	std::cout << "Calculate:";
-	std::cin >> line.content;
+	std::getline(std::cin, line.content);
 	lines.push_back(line);
 
 	EasyScanner easyScanner;
@@ -782,7 +782,7 @@ MU_NOINLINE void CreateRules(const std::string& out_nonterm) override
         auto& p = CreateParseRule();
         p.action_name = "Power()";
         p.expression = "P -> P ^ F";
-        p.SetAction<float, float, Empty, float>(
+        p.SetAction<float(float, Empty, float)>(
             [this](float P, Empty, float F)->float
             {
                 return std::pow(P, F);
@@ -799,7 +799,7 @@ MU_NOINLINE void CreateRules(const std::string& out_nonterm) override
         auto& p = CreateParseRule();
         p.action_name = "Multipy()";
         p.expression = "T -> T * P";
-        p.SetAction<float, float, Empty, float>(
+        p.SetAction<float(float, Empty, float)>(
             [this](float T, Empty, float P)->float
             {
                 return T * P;
@@ -811,7 +811,7 @@ MU_NOINLINE void CreateRules(const std::string& out_nonterm) override
         auto& p = CreateParseRule();
         p.action_name = "Divid()";
         p.expression = "T -> T / P";
-        p.SetAction<float, float, Empty, float>(
+        p.SetAction<float(float, Empty, float)>(
             [this](float T, Empty, float P)->float
             {
                 return T / P;
@@ -828,7 +828,7 @@ MU_NOINLINE void CreateRules(const std::string& out_nonterm) override
         auto& p = CreateParseRule();
         p.action_name = "Add()";
         p.expression = "E -> E + T";
-        p.SetAction<float, float, Empty, float>(
+        p.SetAction<float(float, Empty, float)>(
             [this](float E, Empty, float T)->float
             {
                 return E + T;
@@ -840,7 +840,7 @@ MU_NOINLINE void CreateRules(const std::string& out_nonterm) override
         auto& p = CreateParseRule();
         p.action_name = "Sub()";
         p.expression = "E -> E - T";
-        p.SetAction<float, float, Empty, float>(
+        p.SetAction<float(float, Empty, float)>(
             [this](float E, Empty, float T)->float
             {
                 return E - T;
@@ -899,7 +899,7 @@ public:
             //the output data is in the non-term: <scope>.Expr
             //this time <scope> = CalSub
 			p.expression = "Expr -> CalSub.Expr";
-			p.SetAction<Empty, float>(
+			p.SetAction<Empty(float)>(
 				[this](float res)->Empty
 				{
 					std::cout << "Result = " << res << std::endl;
@@ -916,7 +916,7 @@ public:
             //we need to pass a float data to <scope>.Num(a non-term in CalculatorSubModule)
             //this time <scope> = CalSub
 			p.expression = "CalSub.Num -> num";
-			p.SetAction<float, Empty>(
+			p.SetAction<float(Empty)>(
 				[this](Empty)->float
 				{
 					auto& token = CurrentToken();
@@ -943,7 +943,7 @@ int main()
 	LineContent line;
 	line.line_no = 1;
 	std::cout << "Calculate:";
-	std::cin >> line.content;
+	std::getline(std::cin, line.content);
 	lines.push_back(line);
 
 	EasyScanner easyScanner;
@@ -978,7 +978,7 @@ We implement a cool calculator in [Quick Start](#Quick Start), recall:
     auto& p = CreateParseRule();
     p.action_name = "Divid()";
     p.expression = "T -> T / P";
-    p.SetAction<float, float, Empty, float>(
+    p.SetAction<float(float, Empty, float)>(
         [this](float T, Empty, float P)->float
         {
             return T / P;
@@ -993,7 +993,7 @@ this is the part we do division. of curse we know, `P` shouldn't be 0. so we wan
     auto& p = CreateParseRule();
     p.action_name = "Divid()";
     p.expression = "T -> T / P";
-    p.SetAction<float, float, Empty, float>(
+    p.SetAction<float(float, Empty, float)>(
         [this](float T, Empty, float P)->float
         {
             if (P == 0.0)
@@ -1016,7 +1016,7 @@ this is the part we do division. of curse we know, `P` shouldn't be 0. so we wan
 {
     auto& p = CreateParseRule();
     p.expression = "Expr -> E";
-    p.SetAction<Empty, float>(
+    p.SetAction<Empty(float)>(
         [this](float res)->Empty
         {
             std::cout << "Result = " << res << std::endl;

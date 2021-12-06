@@ -11,7 +11,7 @@ int main()
 	LineContent line;
 	line.line_no = 1;
 	std::cout << "Calculate:";
-	std::cin >> line.content;
+	std::getline(std::cin, line.content);
 	lines.push_back(line);
 
 	EasyScanner easyScanner;

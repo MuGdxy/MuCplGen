@@ -52,7 +52,7 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "FloatVec -> FloatVec.Vec";
-			p.SetAction<Empty, std::vector<float>&>(
+			p.SetAction<Empty(std::vector<float>&)>(
 				[this](std::vector<float>& v)->Empty
 				{
 					std::cout << "Vector = (";
@@ -69,7 +69,7 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "StrVec -> StrVec.Vec";
-			p.SetAction<Empty, std::vector<std::string>&>(
+			p.SetAction<Empty(std::vector<std::string>&)>(
 				[this](std::vector<std::string>& v)->Empty
 				{
 					std::cout << "Vector = (";
@@ -88,7 +88,7 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "StrVec.Comp -> str";
-			p.SetAction<std::string, Empty>(
+			p.SetAction<std::string(Empty)>(
 				[this](Empty)->std::string
 				{
 					auto& token = CurrentToken();
@@ -108,7 +108,7 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "Cal.Num -> num";
-			p.SetAction<float, Empty>(
+			p.SetAction<float(Empty)>(
 				[this](Empty)->float
 				{
 					auto& token = CurrentToken();
