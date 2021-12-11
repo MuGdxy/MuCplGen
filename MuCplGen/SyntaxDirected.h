@@ -83,8 +83,8 @@ namespace MuCplGen
 		ProductionTable production_table;
 	protected:
 		using SemanticAction = std::function<std::any* (std::vector<std::any*>, size_t, TokenSet&)>;
-	private:
 		std::ostream& log;
+	private:
 		std::list<Term*> terminator_rules;
 		std::list<Term*> wild_terminators;
 		std::vector<std::vector<ParseRule*>> quick_parse_rule_table;
