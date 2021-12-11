@@ -125,7 +125,7 @@ namespace MuCplGen
 			{
 				if (debug_option & DebugOption::ShowReductionProcess)
 				{
-					log << rule->fullname_expression << " Action{" << rule->action_name << "} => Semantic Error Occurs" << std::endl;
+					log << rule->fullname_expression << " ActionSetter{" << rule->action_name << "} => Semantic Error Occurs" << std::endl;
 				}
 				if (rule->semantic_error) return rule->semantic_error(input);
 				else return input[error_pos];
@@ -134,7 +134,7 @@ namespace MuCplGen
 			{
 				if (debug_option & DebugOption::ShowReductionProcess)
 				{
-					log << rule->fullname_expression << " Action{" << rule->action_name << "}" << std::endl;
+					log << rule->fullname_expression << " ActionSetter{" << rule->action_name << "}" << std::endl;
 				}
 				if (rule->semantic_action == nullptr) return nullptr;
 				else return rule->semantic_action(input);

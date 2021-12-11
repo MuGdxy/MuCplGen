@@ -81,7 +81,7 @@
     <ClInclude Include="MuCplGen\SubModules\Calculator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Examples\CalculatorSubModule\Calculator.h">
+    <ClInclude Include="MuCplGen\FunctionDeduce.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Examples\SolveSemanticError\Calculator.h">
@@ -89,9 +89,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\CalculatorSubModule\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Examples\SolveSemanticError\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

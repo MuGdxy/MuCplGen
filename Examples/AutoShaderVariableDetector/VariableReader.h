@@ -85,46 +85,26 @@ public:
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Stnc -> VecDef ;";
+			p.expression = "Stnc -> vecType Loc Name ;";
 			//Action: Finish variable
 		}
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Stnc -> BaseDef ;";
+			p.expression = "Stnc -> baseType Loc Name ;";
 			//Action: Finish variable
 		}
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Stnc -> VecDef = Vec ;";
+			p.expression = "Stnc -> vecType Loc Name = Vec ;";
 			//Action: Finish variable
 		}
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Stnc -> BaseDef = Base ;";
+			p.expression = "Stnc -> baseType Loc Name = Base ;";
 			//Action: Finish variable
-		}
-
-		{
-			auto& p = CreateParseRule();
-			p.expression = "VecDef -> vecType Name";
-		}
-
-		{
-			auto& p = CreateParseRule();
-			p.expression = "VecDef -> vecType < Loc > Name";
-		}
-
-		{
-			auto& p = CreateParseRule();
-			p.expression = "BaseDef -> baseType Name";
-		}
-
-		{
-			auto& p = CreateParseRule();
-			p.expression = "BaseDef -> baseType < Loc > Name";
 		}
 
 		{
@@ -135,7 +115,12 @@ public:
 
 		{
 			auto& p = CreateParseRule();
-			p.expression = "Loc -> Cal.Expr";
+			p.expression = "Loc -> < Cal.Expr >";
+		}
+
+		{
+			auto& p = CreateParseRule();
+			p.expression = "Loc -> epsilon";
 		}
 
 		{
@@ -171,7 +156,7 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "NumVec -> ( NumVec.Vec )";
-			p.SetAction<Empty(Empty, std::vector<float>&, Empty)>(
+			p.SetAction(
 				[this](Empty, std::vector<float>& v, Empty)->Empty
 				{
 					std::cout << "Vector = (";
@@ -188,7 +173,7 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "StrVec -> ( StrVec.Vec )";
-			p.SetAction<Empty(Empty, std::vector<std::string>&, Empty)>(
+			p.SetAction(
 				[this](Empty, std::vector<std::string>& v, Empty)->Empty
 				{
 					std::cout << "Vector = (";
@@ -208,7 +193,7 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "StrVec.Comp -> str";
-			p.SetAction<std::string(Empty)>(
+			p.SetAction(
 				[this](Empty)->std::string
 				{
 					auto& token = CurrentToken();
@@ -229,7 +214,7 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "Cal.Num -> num";
-			p.SetAction<float(Empty)>(
+			p.SetAction(
 				[this](Empty)->float
 				{
 					auto& token = CurrentToken();

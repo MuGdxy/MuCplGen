@@ -24,7 +24,7 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "Expr -> E";
-			p.SetAction<Empty(float)>(
+			p.SetAction(
 				[this](float res)->Empty
 				{
 					std::cout << "Result = " << res << std::endl;
@@ -45,7 +45,7 @@ public:
 		{
 			auto& p = CreateParseRule();
 			p.expression = "F -> num";
-			p.SetAction<float(Empty)>(
+			p.SetAction(
 				[this](Empty)->float
 				{
 					auto& token = CurrentToken();
@@ -63,7 +63,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "Power()";
 			p.expression = "P -> P ^ F";
-			p.SetAction<float(float, Empty, float)>(
+			p.SetAction(
 				[this](float P, Empty, float F)->float
 				{
 					return std::pow(P, F);
@@ -79,7 +79,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "Multipy()";
 			p.expression = "T -> T * P";
-			p.SetAction<float(float, Empty, float)>(
+			p.SetAction(
 				[this](float T, Empty, float P)->float
 				{
 					return T * P;
@@ -90,7 +90,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "Divid()";
 			p.expression = "T -> T / P";
-			p.SetAction<float(float, Empty, float)>(
+			p.SetAction(
 				[this](float T, Empty, float P)->float
 				{
 					
@@ -114,7 +114,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "Add()";
 			p.expression = "E -> E + T";
-			p.SetAction<float(float, Empty, float)>(
+			p.SetAction(
 				[this](float E, Empty, float T)->float
 				{
 					return E + T;
@@ -125,7 +125,7 @@ public:
 			auto& p = CreateParseRule();
 			p.action_name = "Sub()";
 			p.expression = "E -> E - T";
-			p.SetAction<float(float, Empty, float)>(
+			p.SetAction(
 				[this](float E, Empty, float T)->float
 				{
 					return E - T;

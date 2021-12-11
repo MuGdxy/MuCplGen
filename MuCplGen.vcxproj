@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Examples\CalculatorSubModule\Calculator.h" />
     <ClInclude Include="Examples\SolveSemanticError\Calculator.h" />
     <ClInclude Include="MuCplGen\CFG.h" />
     <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
@@ -31,6 +30,7 @@
     <ClInclude Include="MuCplGen\EasyToken.h" />
     <ClInclude Include="MuCplGen\FileLoader.h" />
     <ClInclude Include="MuCplGen\FileSystem.h" />
+    <ClInclude Include="MuCplGen\FunctionDeduce.h" />
     <ClInclude Include="MuCplGen\LineContent.h" />
     <ClInclude Include="MuCplGen\MuCplGen.h" />
     <ClInclude Include="MuCplGen\MuException.h" />
@@ -45,7 +45,6 @@
     <ClInclude Include="MuCplGen\Token.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\CalculatorSubModule\main.cpp" />
     <ClCompile Include="Examples\SolveSemanticError\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

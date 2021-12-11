@@ -37,7 +37,7 @@ namespace MuCplGen
 				p.expression = "Comps -> Comps Sep Comp";
 				if (empty)
 				{
-					p.SetAction<PassOn(size_t&, Empty, Empty)>(
+					p.SetAction(
 						[this](size_t& v, Empty, Empty)->PassOn
 						{
 							++v;
@@ -46,7 +46,7 @@ namespace MuCplGen
 				}
 				else
 				{
-					p.SetAction<PassOn(std::vector<T>&, Empty, T&)>(
+					p.SetAction(
 						[this](std::vector<T>& v, Empty, T& t)->PassOn
 						{
 							v.push_back(t);
@@ -61,7 +61,7 @@ namespace MuCplGen
 				p.expression = "Comps -> Comp";
 				if (empty)
 				{
-					p.SetAction<size_t(Empty)>(
+					p.SetAction(
 						[this](Empty)->size_t
 						{
 							return size_t(1);
@@ -69,7 +69,7 @@ namespace MuCplGen
 				}
 				else
 				{
-					p.SetAction<std::vector<T>(T&)>(
+					p.SetAction(
 						[this](T& t)->std::vector<T>
 						{
 							std::vector<T> ret;
