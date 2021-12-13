@@ -84,12 +84,12 @@
     <ClInclude Include="MuCplGen\FunctionDeduce.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Examples\SolveSemanticError\Calculator.h">
+    <ClInclude Include="Examples\SubParser\Calculator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\SolveSemanticError\main.cpp">
+    <ClCompile Include="Examples\SubParser\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

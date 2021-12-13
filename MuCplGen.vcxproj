@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Examples\SolveSemanticError\Calculator.h" />
+    <ClInclude Include="Examples\SubParser\Calculator.h" />
     <ClInclude Include="MuCplGen\CFG.h" />
     <ClInclude Include="MuCplGen\DebugTool\ColoredText.h" />
     <ClInclude Include="MuCplGen\DebugTool\DebugOption.h" />
@@ -45,7 +45,7 @@
     <ClInclude Include="MuCplGen\Token.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Examples\SolveSemanticError\main.cpp" />
+    <ClCompile Include="Examples\SubParser\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

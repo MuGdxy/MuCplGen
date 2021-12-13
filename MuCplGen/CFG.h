@@ -242,6 +242,9 @@ namespace MuCplGen
 				pr->semantic_action = [action, pr](std::vector<std::any*> data)->std::any*
 				{
 					pr->BeginArgs(data);
+					static_assert(!std::is_same_v<Ret,void>, 
+						"Your Semantic Action has no return, "
+						"return Empty{},if you have nothing to pass on");
 					Ret ret;
 					bool error = false;
 					SemanticError se;

@@ -45,7 +45,16 @@ namespace MuCplGen
 		GotoTable goto_table;
 		ActionTable action_table;
 		
-		
+		void ModifyTokenPointer(size_t  pointer)
+		{
+			ptr_updated = true;
+			token_pointer = pointer;
+		}
+		void SetStartTokenPointer(size_t pointer)
+		{
+			token_pointer = pointer;
+		}
+		bool ptr_updated = false;
 		size_t token_pointer = 0;
 		size_t debug_option = 0;
 		std::stack<State> state_stack;
@@ -62,7 +71,6 @@ namespace MuCplGen
 		
 		void Reset()
 		{
-			token_pointer = 0;
 			while (!state_stack.empty())
 				state_stack.pop();
 			state_stack.push(0);
@@ -76,8 +84,8 @@ namespace MuCplGen
 			SemanticAction semantic_action, ErrorFunc error_func = nullptr, std::ostream& log = std::cout)
 		{
 			auto len = token_set.size();
-			size_t top_token_iter = 0;
-			size_t iter = 0;
+			size_t top_token_iter = token_pointer;
+			size_t iter = token_pointer;
 			bool on = true;
 			bool acc = false;
 			while (on)
@@ -100,7 +108,12 @@ namespace MuCplGen
 						state_stack.push(action.aim_state);
 						semantic_stack.push(nullptr);
 						top_token_iter = iter;
-						++iter;
+						if (ptr_updated)
+						{
+							iter = token_pointer;
+							ptr_updated = false;
+						}
+						else ++iter;
 						if (debug_option & DebugOption::ParserDetail)
 							log << "move_in state:" << action.aim_state << " term: " << action.sym << std::endl;
 						break;

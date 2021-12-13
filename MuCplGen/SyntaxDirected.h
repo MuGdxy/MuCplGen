@@ -125,7 +125,8 @@ namespace MuCplGen
 			{
 				if (debug_option & DebugOption::ShowReductionProcess)
 				{
-					log << rule->fullname_expression << " ActionSetter{" << rule->action_name << "} => Semantic Error Occurs" << std::endl;
+					log << rule->fullname_expression << " Action{" << rule->action_name << "}"
+						"[" << (*token_set)[token_iter].name << "]=> Semantic Error Occurs" << std::endl;
 				}
 				if (rule->semantic_error) return rule->semantic_error(input);
 				else return input[error_pos];
@@ -134,7 +135,8 @@ namespace MuCplGen
 			{
 				if (debug_option & DebugOption::ShowReductionProcess)
 				{
-					log << rule->fullname_expression << " ActionSetter{" << rule->action_name << "}" << std::endl;
+					log << rule->fullname_expression << " Action{" << rule->action_name << "}" 
+					"["<< (*token_set)[token_iter].name <<"]"<< std::endl;
 				}
 				if (rule->semantic_action == nullptr) return nullptr;
 				else return rule->semantic_action(input);
@@ -226,10 +228,16 @@ namespace MuCplGen
 			name_to_sym.insert({ "epsilon",sym_to_name.size() });
 			sym_to_name.push_back("epsilon");
 
-
+			std::list<Term*> end_term;
+			
 			// ruled terminator
 			for (auto rule : terminator_rules)
 			{
+				if (rule->name == "$")
+				{
+					end_term.push_back(rule);
+					continue;
+				}
 				std::string name = rule->ScopedName(rule->name);
 				rule->sym = sym_to_name.size();
 				CheckAndAddSymbol(name);
@@ -274,6 +282,9 @@ namespace MuCplGen
 
 			end = sym_to_name.size();
 			sym_to_name.push_back("$");
+			name_to_sym["$"] = end;
+
+			for (auto rule : end_term) rule->sym = end;
 
 			if (debug_option & DebugOption::ShowCatchedVariables)
 			{
@@ -386,12 +397,13 @@ namespace MuCplGen
 
 		bool Load(const std::string& path) { return my_parser.Load(path); }
 
-		bool Parse(std::vector<LineContent>& input_text, TokenSet& token_set)
+		bool Parse(std::vector<LineContent>& input_text, TokenSet& token_set, size_t start_token = 0)
 		{
 			this->input_text = &input_text;
 			this->token_set = &token_set;
 			if (!production_table.size()) Build();
 			else my_parser.Reset();
+			my_parser.SetStartTokenPointer(start_token);
 			return my_parser.Parse(token_set,
 				[this](const Token& token) {return TokenToTerminator(token); },
 				[this](std::vector<std::any*> input, size_t nonterm, size_t pro_index, size_t token_iter)
@@ -407,6 +419,8 @@ namespace MuCplGen
 		TokenSet& GetTokenSet() { return *token_set; }
 
 		size_t TokenIter() { return token_iter; }
+
+		void SetTokenPointerForParser(size_t i) { my_parser.ModifyTokenPointer(i); }
 
 		Token& CurrentToken() { return (*token_set)[token_iter]; }
 
@@ -455,11 +469,45 @@ namespace MuCplGen
 			for (auto rule : terminator_rules) delete rule;
 		}
 
-#pragma region For Custom Code 
-	protected:
+		size_t debug_option = 0;
+
 		BuildOption generation_option = BuildOption::Runtime;
 
 		void SetStorage(const std::string& storage) { this->storage = storage; }
+
+#pragma region For Custom Code 
+	protected:
+		template<class Par>
+		void SubParse(SyntaxDirected<Par>& sub_parser)
+		{
+			sub_parser.Parse(GetInputText(), GetTokenSet(), TokenIter());
+			SetTokenPointerForParser(sub_parser.TokenIter());
+		}
+
+		template<class Par>
+		void CreateSubParseRule(const std::string& nonterm, SyntaxDirected<Par>& sub_parser)
+		{
+			auto& p = CreateParseRule();
+			p.head = nonterm;
+			p.body = { "epsilon" };
+			p.SetAction([this, &sub_parser](Empty)
+				{
+					this->SubParse(sub_parser);
+					return Empty{};
+				});
+		}
+
+		template<class Par>
+		void CreateSubParseRule(
+			const std::string& nonterm, 
+			SyntaxDirected<Par>& sub_parser,
+			std::function<Empty(Empty)> action)
+		{
+			auto& p = CreateParseRule();
+			p.head = nonterm;
+			p.body = { "epsilon" };
+			p.SetAction(action);
+		}
 
 		Term& CreateTerminator(const std::string& name)
 		{
@@ -479,7 +527,7 @@ namespace MuCplGen
 			error_action = action;
 		}
 
-		size_t debug_option = 0;
+		
 #pragma endregion
 	};
 

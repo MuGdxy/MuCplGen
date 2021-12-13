@@ -55,7 +55,7 @@ command line:
 mkdir build
 cd build
 cmake ..
-cmake --build
+cmake --build .
 ```
 
 if you are Linux user, make sure that you g++8 is available. [linux install g++8](#install g++8)
@@ -92,7 +92,7 @@ int main()
 }
 ```
 
-For convinience, this time, we read the console as input.
+For convenience, this time, we read the console as input.
 
 ### Recognize Number & Operator
 
