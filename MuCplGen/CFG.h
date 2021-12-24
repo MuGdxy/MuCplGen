@@ -14,16 +14,6 @@ namespace MuCplGen
 {
 	struct Empty {};
 
-	template<class T = void>
-	class StaticVar
-	{
-		friend struct ParseRule;
-		static Empty empty;
-	};
-
-	template<class T>
-	Empty StaticVar<T>::empty;
-
 	struct PassOn
 	{
 		PassOn(int i = 0) : index(i) {}
@@ -82,20 +72,6 @@ namespace MuCplGen
 			else return name;
 		}
 
-		//std::string ScopedName(const std::string& name)
-		//{
-		//    if(scopes.empty()) return name;
-		//    else if (name.find(".") == -1)
-		//    {
-		//        std::stringstream ss;
-		//        for (auto& scope : scopes) ss << scope << ".";
-		//        ss << name;
-		//        return ss.str();
-		//    }
-		//    else return name;
-		//}
-
-		//void PushScope(const std::string& scope) { scopes.push_back(scope); }
 		void ParseExpression()
 		{
 			if (!head.empty())
@@ -147,25 +123,18 @@ namespace MuCplGen
 			auto arg = data[index];
 			if (arg == nullptr)
 			{
-				//to fool the compiler
-				if (typeid(typename std::remove_reference<Arg>::type) == typeid(Empty))
-					return *reinterpret_cast<typename std::remove_reference<Arg>::type*>(&StaticVar<void>::empty);
-				else
-				{
-					std::string name = typeid(typename std::remove_reference<Arg>::type).name();
-					std::stringstream ss;
-					ss << "Unmatched Type!"
-						<< "Parser Rule=" << this->action_name << std::endl
-						<< "Production=" << this->fullname_expression << std::endl
-						<< "Type of income data is <Empty>, your parameter=" << name << "(Arg" << index << ")" << std::endl
-						<< "Check your Semantic Action parameters!";
-					throw(Exception(ss.str()));
-				}
+				if constexpr (std::is_same_v<std::remove_reference<Arg>::type, Empty>)
+					return Empty{};
+				std::string name = typeid(typename std::remove_reference<Arg>::type).name();
+				std::stringstream ss;
+				ss << "Unmatched Type!"
+					<< "Parser Rule=" << this->action_name << std::endl
+					<< "Production=" << this->fullname_expression << std::endl
+					<< "Type of income data is <Empty>, your parameter=" << name << "(Arg" << index << ")" << std::endl
+					<< "Check your Semantic Action parameters!";
+				throw(Exception(ss.str()));
 			}
-			else
-			{
-				if (typeid(Arg) == data[index]->type()) return std::any_cast<Arg>(*data[index]);
-			}
+			if (typeid(Arg) == data[index]->type()) return std::any_cast<Arg>(*data[index]);
 			std::string your_parameter_type_name = typeid(Arg).name();
 			std::string data_type_name = data[index]->type().name();
 			std::stringstream ss;
@@ -189,8 +158,8 @@ namespace MuCplGen
 		template<class Ret>
 		std::any* RecordRet(Ret&& ret, const std::vector<std::any*>& data)
 		{
-			if (std::is_null_pointer<Ret>::value) return nullptr;
-			if (typeid(PassOn) == typeid(Ret)) return data[reinterpret_cast<PassOn*>(&ret)->index];
+			if constexpr(std::is_null_pointer_v<Ret>) return nullptr;
+			if constexpr(std::is_same_v<PassOn,Ret>) return data[ret->index];
 			auto* o = new std::any;
 			o->emplace<Ret>(std::forward<Ret>(ret));
 			gc.push(o);
