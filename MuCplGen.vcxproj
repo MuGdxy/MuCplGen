@@ -45,6 +45,7 @@
     <ClInclude Include="MuCplGen\Token.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Examples\Sequence\main.cpp" />
     <ClCompile Include="Examples\SubParser\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

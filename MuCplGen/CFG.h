@@ -134,6 +134,7 @@ namespace MuCplGen
 					<< "Check your Semantic Action parameters!";
 				throw(Exception(ss.str()));
 			}
+
 			if (typeid(Arg) == data[index]->type()) return std::any_cast<Arg>(*data[index]);
 			std::string your_parameter_type_name = typeid(Arg).name();
 			std::string data_type_name = data[index]->type().name();
@@ -159,7 +160,7 @@ namespace MuCplGen
 		std::any* RecordRet(Ret&& ret, const std::vector<std::any*>& data)
 		{
 			if constexpr(std::is_null_pointer_v<Ret>) return nullptr;
-			if constexpr(std::is_same_v<PassOn,Ret>) return data[ret->index];
+			if constexpr (std::is_same_v<PassOn, std::remove_reference<Ret>::type>) return data[ret.index];
 			auto* o = new std::any;
 			o->emplace<Ret>(std::forward<Ret>(ret));
 			gc.push(o);
