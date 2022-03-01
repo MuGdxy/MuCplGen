@@ -1,4 +1,4 @@
-#include "../../MuCplGen/MuCplGen.h"
+#include <MuCplGen/MuCplGen.h>
 #include "Calculator.h"
 using namespace MuCplGen;
 

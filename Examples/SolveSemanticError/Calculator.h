@@ -1,6 +1,6 @@
 #pragma once
 #include <cmath>
-#include "../../MuCplGen/MuCplGen.h"
+#include <MuCplGen/MuCplGen.h>
 
 using namespace MuCplGen;
 class Calculator :public SyntaxDirected<SLRParser<EasyToken>>

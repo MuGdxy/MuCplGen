@@ -2,9 +2,9 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include "../../MuCplGen/MuCplGen.h"
-#include "Examples/ILGenerator/ILGenerator.h"
-#include "../../MuCplGen/DebugTool/StopWatch.h"
+#include <MuCplGen/MuCplGen.h>
+#include "ILGenerator.h"
+#include <MuCplGen/DebugTool/StopWatch.h>
 using namespace MuCplGen;
 
 int main()

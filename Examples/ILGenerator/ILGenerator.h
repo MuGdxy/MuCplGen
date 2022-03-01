@@ -2,7 +2,7 @@
 #include <type_traits>
 #include "MuCplGen/SyntaxDirected.h"
 #include "ILSymbolTable.h"
-#include "../../MuCplGen/Token.h"
+#include <MuCplGen/Token.h>
 
 using namespace MuCplGen;
 class ILGenerator :public SyntaxDirected<SLRParser<EasyToken>>

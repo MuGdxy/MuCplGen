@@ -1,6 +1,6 @@
-#include "../../MuCplGen/MuCplGen.h"
-#include "../../MuCplGen/SubModules/Sequence.h"
-#include "../../MuCplGen/SubModules/Calculator.h"
+#include <MuCplGen/MuCplGen.h>
+#include <MuCplGen/SubModules/Sequence.h>
+#include <MuCplGen/SubModules/Calculator.h>
 using namespace MuCplGen;
 
 class SequenceReader : public SyntaxDirected<SLRParser<EasyToken>>

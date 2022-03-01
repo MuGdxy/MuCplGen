@@ -1,4 +1,4 @@
-#include "../../MuCplGen/MuCplGen.h"
+#include <MuCplGen/MuCplGen.h>
 using namespace MuCplGen;
 
 class Reader : public SyntaxDirected<SLRParser<EasyToken>>
